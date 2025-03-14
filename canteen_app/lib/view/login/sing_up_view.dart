@@ -1,35 +1,38 @@
+import 'dart:io';
+
 import 'package:canteen_app/common/color_extension.dart';
 import 'package:canteen_app/common_widget/round_button.dart';
-import 'package:canteen_app/view/login/rest_password_view.dart';
-import 'package:canteen_app/view/login/sing_up_view.dart';
+import 'package:canteen_app/common_widget/round_textfield.dart';
+import 'package:canteen_app/view/login/login_view.dart';
+import 'package:canteen_app/view/login/otp_view.dart';
 import 'package:flutter/material.dart';
 // import 'package:food_delivery/common/color_extension.dart';
 // import 'package:food_delivery/common/extension.dart';
-// import 'package:food_delivery/common/globs.dart';
 // import 'package:food_delivery/common_widget/round_button.dart';
-// import 'package:food_delivery/view/login/rest_password_view.dart';
-// import 'package:food_delivery/view/login/sing_up_view.dart';
-// import 'package:food_delivery/view/on_boarding/on_boarding_view.dart';
+// import 'package:food_delivery/view/login/login_view.dart';
 
+// import '../../common/globs.dart';
 // import '../../common/service_call.dart';
-import '../../common_widget/round_icon_button.dart';
-import '../../common_widget/round_textfield.dart';
+// import '../../common_widget/round_textfield.dart';
+// import '../on_boarding/on_boarding_view.dart';
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+class SignUpView extends StatefulWidget {
+  const SignUpView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<SignUpView> createState() => _SignUpViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _SignUpViewState extends State<SignUpView> {
+  TextEditingController txtName = TextEditingController();
+  TextEditingController txtMobile = TextEditingController();
+  TextEditingController txtAddress = TextEditingController();
   TextEditingController txtEmail = TextEditingController();
   TextEditingController txtPassword = TextEditingController();
+  TextEditingController txtConfirmPassword = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    var media = MediaQuery.of(context).size;
-
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -41,14 +44,14 @@ class _LoginViewState extends State<LoginView> {
                 height: 64,
               ),
               Text(
-                "Login",
+                "Sign Up",
                 style: TextStyle(
                     color: TColor.primaryText,
                     fontSize: 30,
                     fontWeight: FontWeight.w800),
               ),
               Text(
-                "Add your details to login",
+                "Add your details to sign up",
                 style: TextStyle(
                     color: TColor.secondaryText,
                     fontSize: 14,
@@ -58,9 +61,31 @@ class _LoginViewState extends State<LoginView> {
                 height: 25,
               ),
               RoundTextfield(
-                hintText: "Your Email",
+                hintText: "Name",
+                controller: txtName,
+              ),
+              const SizedBox(
+                height: 25,
+              ),
+              RoundTextfield(
+                hintText: "Email",
                 controller: txtEmail,
                 keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(
+                height: 25,
+              ),
+              RoundTextfield(
+                hintText: "Mobile No",
+                controller: txtMobile,
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(
+                height: 25,
+              ),
+              RoundTextfield(
+                hintText: "Address",
+                controller: txtAddress,
               ),
               const SizedBox(
                 height: 25,
@@ -73,68 +98,34 @@ class _LoginViewState extends State<LoginView> {
               const SizedBox(
                 height: 25,
               ),
-              RoundButton(
-                  title: "Login",
-                  onPressed: () {
-                    // btnLogin();
-                  }),
-              const SizedBox(
-                height: 4,
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ResetPasswordView(),
-                    ),
-                  );
-                },
-                child: Text(
-                  "Forgot your password?",
-                  style: TextStyle(
-                      color: TColor.secondaryText,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500),
-                ),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              Text(
-                "or Login With",
-                style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              RoundIconButton(
-                icon: "assets/img/facebook_logo.png",
-                title: "Login with Facebook",
-                color: const Color(0xff367FC0),
-                onPressed: () {},
+              RoundTextfield(
+                hintText: "Confirm Password",
+                controller: txtConfirmPassword,
+                obscureText: true,
               ),
               const SizedBox(
                 height: 25,
               ),
-              RoundIconButton(
-                icon: "assets/img/google_logo.png",
-                title: "Login with Google",
-                color: const Color(0xffDD4B39),
-                onPressed: () {},
-              ),
+              RoundButton(
+                  title: "Sign Up",
+                  onPressed: () {
+                    // btnSignUp();
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => const OTPView(),
+                    //   ),
+                    // );
+                  }),
               const SizedBox(
-                height: 80,
+                height: 30,
               ),
               TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const SignUpView(),
+                      builder: (context) => const LoginView(),
                     ),
                   );
                 },
@@ -142,14 +133,14 @@ class _LoginViewState extends State<LoginView> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      "Don't have an Account? ",
+                      "Already have an Account? ",
                       style: TextStyle(
                           color: TColor.secondaryText,
                           fontSize: 14,
                           fontWeight: FontWeight.w500),
                     ),
                     Text(
-                      "Sign Up",
+                      "Login",
                       style: TextStyle(
                           color: TColor.primary,
                           fontSize: 14,
@@ -166,9 +157,24 @@ class _LoginViewState extends State<LoginView> {
   }
 
   //TODO: Action
-//   void btnLogin() {
+//   void btnSignUp() {
+//     if (txtName.text.isEmpty) {
+//       mdShowAlert(Globs.appName, MSG.enterName, () {});
+//       return;
+//     }
+
 //     if (!txtEmail.text.isEmail) {
 //       mdShowAlert(Globs.appName, MSG.enterEmail, () {});
+//       return;
+//     }
+
+//     if (txtMobile.text.isEmpty) {
+//       mdShowAlert(Globs.appName, MSG.enterMobile, () {});
+//       return;
+//     }
+
+//     if (txtAddress.text.isEmpty) {
+//       mdShowAlert(Globs.appName, MSG.enterAddress, () {});
 //       return;
 //     }
 
@@ -177,21 +183,30 @@ class _LoginViewState extends State<LoginView> {
 //       return;
 //     }
 
+//     if (txtPassword.text != txtConfirmPassword.text) {
+//       mdShowAlert(Globs.appName, MSG.enterPasswordNotMatch, () {});
+//       return;
+//     }
+
 //     endEditing();
 
-//     serviceCallLogin({
+//     serviceCallSignUp({
+//       "name": txtName.text,
+//       "mobile": txtMobile.text,
 //       "email": txtEmail.text,
+//       "address": txtAddress.text,
 //       "password": txtPassword.text,
-//       "push_token": ""
+//       "push_token": "",
+//       "device_type": Platform.isAndroid ? "A" : "I"
 //     });
 //   }
 
 //   //TODO: ServiceCall
 
-//   void serviceCallLogin(Map<String, dynamic> parameter) {
+//   void serviceCallSignUp(Map<String, dynamic> parameter) {
 //     Globs.showHUD();
 
-//     ServiceCall.post(parameter, SVKey.svLogin,
+//     ServiceCall.post(parameter, SVKey.svSignUp,
 //         withSuccess: (responseObj) async {
 //       Globs.hideHUD();
 //       if (responseObj[KKey.status] == "1") {
