@@ -3,15 +3,7 @@ import 'package:canteen_app/common_widget/round_button.dart';
 import 'package:canteen_app/view/login/rest_password_view.dart';
 import 'package:canteen_app/view/login/sing_up_view.dart';
 import 'package:flutter/material.dart';
-// import 'package:food_delivery/common/color_extension.dart';
-// import 'package:food_delivery/common/extension.dart';
-// import 'package:food_delivery/common/globs.dart';
-// import 'package:food_delivery/common_widget/round_button.dart';
-// import 'package:food_delivery/view/login/rest_password_view.dart';
-// import 'package:food_delivery/view/login/sing_up_view.dart';
-// import 'package:food_delivery/view/on_boarding/on_boarding_view.dart';
 
-// import '../../common/service_call.dart';
 import '../../common_widget/round_icon_button.dart';
 import '../../common_widget/round_textfield.dart';
 

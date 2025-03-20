@@ -1,3 +1,4 @@
+import 'package:canteen_app/view/main_tabview/main_tabview.dart';
 import 'package:canteen_app/view/on_boarding/startup_view.dart';
 import 'package:flutter/material.dart';
 
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const StartupView(),
+      home: const MainTabView(),
     );
   }
 }
