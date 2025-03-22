@@ -119,26 +119,26 @@ class _HomeViewState extends State<HomeView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Text(
-                    //   "Good morning ${ServiceCall.userPayload[KKey.name] ?? ""}!",
-                    //   style: TextStyle(
-                    //       color: TColor.primaryText,
-                    //       fontSize: 20,
-                    //       fontWeight: FontWeight.w800),
-                    // ),
-                    // IconButton(
-                    // onPressed: () {
-                    //   Navigator.push(
-                    //       context,
-                    //       MaterialPageRoute(
-                    //           builder: (context) => const MyOrderView()));
-                    // },
-                    //   icon: Image.asset(
-                    //     "assets/img/shopping_cart.png",
-                    //     width: 25,
-                    //     height: 25,
-                    //   ),
-                    // ),
+                    Text(
+                      "Good morning ${ServiceCall.userPayload[KKey.name] ?? ""}!",
+                      style: TextStyle(
+                          color: TColor.primaryText,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800),
+                    ),
+                    IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const MyOrderView()));
+                    },
+                      icon: Image.asset(
+                        "assets/img/shopping_cart.png",
+                        width: 25,
+                        height: 25,
+                      ),
+                    ),
                   ],
                 ),
               ),
