@@ -20,13 +20,12 @@ class Globs {
     EasyLoading.dismiss();
   }
 
-
-  static void udSet(dynamic data, String key){
+  static void udSet(dynamic data, String key) {
     var jsonStr = json.encode(data);
     prefs?.setString(key, jsonStr);
   }
 
-  static void udStringSet(String data, String key){
+  static void udStringSet(String data, String key) {
     prefs?.setString(key, data);
   }
 
@@ -34,11 +33,11 @@ class Globs {
     prefs?.setBool(key, data);
   }
 
-  static void udIntSet(int data, String key)  {
+  static void udIntSet(int data, String key) {
     prefs?.setInt(key, data);
   }
 
-  static void udDoubleSet(double data, String key)  {
+  static void udDoubleSet(double data, String key) {
     prefs?.setDouble(key, data);
   }
 
@@ -74,7 +73,7 @@ class Globs {
     try {
       return await FlutterTimezone.getLocalTimezone();
     } on PlatformException {
-        return "";
+      return "";
     }
   }
 }
@@ -127,8 +126,7 @@ class MSG {
   static const enterAddress = "Please enter your address.";
   static const enterPassword =
       "Please enter password minimum 6 characters at least.";
-  static const enterPasswordNotMatch =
-      "Please enter password not match.";
+  static const enterPasswordNotMatch = "Please enter password not match.";
   static const success = "success";
   static const fail = "fail";
 }

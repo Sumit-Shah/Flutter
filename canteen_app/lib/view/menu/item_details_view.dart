@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:food_delivery/common_widget/round_icon_button.dart';
 
-import '../../common/color_extension.dart';
-import '../more/my_order_view.dart';
+import '../../../common/color_extension.dart';
+import '../../more/my_order_view.dart';
 
 class ItemDetailsView extends StatefulWidget {
   const ItemDetailsView({super.key});
