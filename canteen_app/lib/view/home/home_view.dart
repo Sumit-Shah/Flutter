@@ -1,11 +1,7 @@
 import 'package:canteen_app/common/color_extension.dart';
 import 'package:canteen_app/common_widget/round_textfield.dart';
 import 'package:flutter/material.dart';
-// import 'package:food_delivery/common/color_extension.dart';
-// import 'package:food_delivery/common_widget/round_textfield.dart';
 
-// import '../../common/globs.dart';
-// import '../../common/service_call.dart';
 import '../../common_widget/category_cell.dart';
 import '../../common_widget/most_popular_cell.dart';
 import '../../common_widget/popular_resutaurant_row.dart';
@@ -119,26 +115,26 @@ class _HomeViewState extends State<HomeView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Good morning ${ServiceCall.userPayload[KKey.name] ?? ""}!",
-                      style: TextStyle(
-                          color: TColor.primaryText,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800),
-                    ),
-                    IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const MyOrderView()));
-                    },
-                      icon: Image.asset(
-                        "assets/img/shopping_cart.png",
-                        width: 25,
-                        height: 25,
-                      ),
-                    ),
+                    // Text(
+                    // "Good morning ${ServiceCall.userPayload[KKey.name] ?? ""}!",
+                    //   style: TextStyle(
+                    //       color: TColor.primaryText,
+                    //       fontSize: 20,
+                    //       fontWeight: FontWeight.w800),
+                    // ),
+                    // IconButton(
+                    // onPressed: () {
+                    //   Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //           builder: (context) => const MyOrderView()));
+                    // },
+                    //   icon: Image.asset(
+                    //     "assets/img/shopping_cart.png",
+                    //     width: 25,
+                    //     height: 25,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

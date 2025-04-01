@@ -1,9 +1,7 @@
+import 'package:canteen_app/common_widget/round_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:food_delivery/common_widget/round_icon_button.dart';
-
 import '../../../common/color_extension.dart';
-import '../../more/my_order_view.dart';
 
 class ItemDetailsView extends StatefulWidget {
   const ItemDetailsView({super.key});
@@ -465,11 +463,11 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                               )),
                                           InkWell(
                                             onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          const MyOrderView()));
+                                              // Navigator.push(
+                                              // context,
+                                              // MaterialPageRoute(
+                                              //     builder: (context) =>
+                                              //         const MyOrderView()));
                                             },
                                             child: Container(
                                               width: 45,
@@ -554,10 +552,10 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                       ),
                       IconButton(
                         onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const MyOrderView()));
+                          // Navigator.push(
+                          // context,
+                          // MaterialPageRoute(
+                          // builder: (context) => const MyOrderView()));
                         },
                         icon: Image.asset(
                           "assets/img/shopping_cart.png",

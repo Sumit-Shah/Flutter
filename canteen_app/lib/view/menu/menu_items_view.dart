@@ -1,11 +1,7 @@
 import 'package:canteen_app/common/color_extension.dart';
 import 'package:canteen_app/common_widget/round_textfield.dart';
 import 'package:flutter/material.dart';
-import 'package:food_delivery/common/color_extension.dart';
-import 'package:food_delivery/common_widget/round_textfield.dart';
-
 import '../../../common_widget/menu_item_row.dart';
-import '../../more/my_order_view.dart';
 import 'item_details_view.dart';
 
 class MenuItemsView extends StatefulWidget {
@@ -122,10 +118,10 @@ class _MenuItemsViewState extends State<MenuItemsView> {
                     ),
                     IconButton(
                       onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const MyOrderVziew()));
+                        // Navigator.push(
+                        // context,
+                        // MaterialPageRoute(
+                        //     builder: (context) => const MyOrderVziew()));
                       },
                       icon: Image.asset(
                         "assets/img/shopping_cart.png",
