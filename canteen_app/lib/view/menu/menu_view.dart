@@ -1,3 +1,4 @@
+import 'package:canteen_app/view/more/my_order_view.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/color_extension.dart';
@@ -76,10 +77,10 @@ class _MenuViewState extends State<MenuView> {
                         ),
                         IconButton(
                           onPressed: () {
-                            // Navigator.push(
-                            //     context,
-                            //     MaterialPageRoute(
-                            //         builder: (context) => const MyOrderView()));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const MyOrderView()));
                           },
                           icon: Image.asset(
                             "assets/img/shopping_cart.png",

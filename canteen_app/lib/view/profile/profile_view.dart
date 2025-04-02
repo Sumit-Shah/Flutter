@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:canteen_app/common_widget/round_button.dart';
+import 'package:canteen_app/view/more/my_order_view.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -49,10 +50,10 @@ class _ProfileViewState extends State<ProfileView> {
                 ),
                 IconButton(
                   onPressed: () {
-                    // Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //         builder: (context) => const MyOrderView()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const MyOrderView()));
                   },
                   icon: Image.asset(
                     "assets/img/shopping_cart.png",
