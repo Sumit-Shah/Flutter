@@ -223,7 +223,10 @@ class _PaymentDetailsViewState extends State<PaymentDetailsView> {
                           builder: (context) {
                             return const AddCardView();
                           });
-                      // Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCardView() ));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AddCardView()));
                     }),
               ),
               const SizedBox(

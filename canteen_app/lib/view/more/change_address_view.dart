@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import '../../common/color_extension.dart';
 import '../../common_widget/round_textfield.dart';
 
@@ -76,7 +75,7 @@ class _ChangeAddressViewState extends State<ChangeAddressView> {
         ),
       ),
       body: CustomGoogleMapMarkerBuilder(
-        //screenshotDelay: const Duration(seconds: 4),
+        screenshotDelay: const Duration(seconds: 4),
         customMarkers: _customMarkers,
         builder: (BuildContext context, Set<Marker>? markers) {
           if (markers == null) {
@@ -87,10 +86,10 @@ class _ChangeAddressViewState extends State<ChangeAddressView> {
             initialCameraPosition: _kLake,
             compassEnabled: false,
             // gestureRecognizers: <dynamic>{}
-            //   ..add(Factory<PanGestureRecognizer>(
-            //     () => PanGestureRecognizer(),
-            //   )),
-            // markers: markers,
+            // ..add(Factory<PanGestureRecognizer>(
+            //   () => PanGestureRecognizer(),
+            // )),
+            markers: markers,
             onMapCreated: (GoogleMapController controller) {
               _controller = controller;
             },
