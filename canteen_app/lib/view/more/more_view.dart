@@ -1,3 +1,4 @@
+import 'package:canteen_app/common/service_call.dart';
 import 'package:canteen_app/view/more/about_us_view.dart';
 import 'package:canteen_app/view/more/inbox_view.dart';
 import 'package:canteen_app/view/more/my_order_view.dart';
@@ -79,10 +80,10 @@ class _MoreViewState extends State<MoreView> {
                     ),
                     IconButton(
                       onPressed: () {
-                        // Navigator.push(
-                        // context,
-                        // MaterialPageRoute(
-                        //     builder: (context) => const MyOrderView()));
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const MyOrderView()));
                       },
                       icon: Image.asset(
                         "assets/img/shopping_cart.png",
@@ -135,7 +136,7 @@ class _MoreViewState extends State<MoreView> {
                                 MaterialPageRoute(
                                     builder: (context) => const AboutUsView()));
                           case "6":
-                          // ServiceCall.logout();
+                            ServiceCall.logout();
 
                           default:
                         }

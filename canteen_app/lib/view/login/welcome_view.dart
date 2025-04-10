@@ -1,7 +1,7 @@
 import 'package:canteen_app/common/color_extension.dart';
 import 'package:canteen_app/common_widget/round_button.dart';
 import 'package:canteen_app/view/login/login_view.dart';
-import 'package:canteen_app/view/login/sing_up_view.dart';
+import 'package:canteen_app/view/login/sign_up_view.dart';
 import 'package:flutter/material.dart';
 
 class WelcomeView extends StatefulWidget {

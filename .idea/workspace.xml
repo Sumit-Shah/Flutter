@@ -4,7 +4,26 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="decfa86d-c74b-4550-8faa-841ad4a70f6b" name="Changes" comment="" />
+    <list default="true" id="decfa86d-c74b-4550-8faa-841ad4a70f6b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/common/extension.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/common/extension.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/common/globs.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/common/globs.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/common/service_call.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/common/service_call.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/home/home_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/home/home_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/login_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/login/login_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/new_password_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/login/new_password_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/otp_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/login/otp_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/rest_password_view.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/sing_up_view.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/welcome_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/login/welcome_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/more/change_address_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/more/change_address_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/more/more_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/more/more_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/on_boarding/on_boarding_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/on_boarding/on_boarding_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/on_boarding/startup_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/on_boarding/startup_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/test/widget_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/test/widget_test.dart" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,9 +35,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 1
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
   <component name="ProjectId" id="2uIU0af7MB8miamGldsqAf35Vzh" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -28,13 +47,14 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/SUMIT SHAH/Desktop/Flutter",
+    "last_opened_file_path": "/home/shah/Documents/Flutter",
     "settings.editor.selected.configurable": "dart.settings"
   }
 }]]></component>

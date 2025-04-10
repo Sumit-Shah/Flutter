@@ -1,9 +1,12 @@
 import 'package:canteen_app/common/color_extension.dart';
+import 'package:canteen_app/common/extension.dart';
+import 'package:canteen_app/common/globs.dart';
 import 'package:canteen_app/common_widget/round_button.dart';
-import 'package:canteen_app/view/login/rest_password_view.dart';
-import 'package:canteen_app/view/login/sing_up_view.dart';
+import 'package:canteen_app/view/login/reset_password_view.dart';
+import 'package:canteen_app/view/login/sign_up_view.dart' show SignUpView;
+import 'package:canteen_app/view/on_boarding/on_boarding_view.dart';
 import 'package:flutter/material.dart';
-
+import '../../common/service_call.dart';
 import '../../common_widget/round_icon_button.dart';
 import '../../common_widget/round_textfield.dart';
 
@@ -20,7 +23,7 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    var media = MediaQuery.of(context).size;
+    // var media = MediaQuery.of(context).size;
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -68,7 +71,7 @@ class _LoginViewState extends State<LoginView> {
               RoundButton(
                   title: "Login",
                   onPressed: () {
-                    // btnLogin(MainTabView);
+                    btnLogin();
                   }),
               const SizedBox(
                 height: 4,
@@ -155,5 +158,54 @@ class _LoginViewState extends State<LoginView> {
         ),
       ),
     );
+  }
+
+  //TODO: Action
+  void btnLogin() {
+    if (!txtEmail.text.isEmail) {
+      mdShowAlert(Globs.appName, MSG.enterEmail, () {});
+      return;
+    }
+
+    if (txtPassword.text.length < 6) {
+      mdShowAlert(Globs.appName, MSG.enterPassword, () {});
+      return;
+    }
+
+    endEditing();
+
+    serviceCallLogin({
+      "email": txtEmail.text,
+      "password": txtPassword.text,
+      "push_token": ""
+    });
+  }
+
+  //TODO: ServiceCall
+
+  void serviceCallLogin(Map<String, dynamic> parameter) {
+    Globs.showHUD();
+
+    ServiceCall.post(parameter, SVKey.svLogin,
+        withSuccess: (responseObj) async {
+      Globs.hideHUD();
+      if (responseObj[KKey.status] == "1") {
+        Globs.udSet(responseObj[KKey.payload] as Map? ?? {}, Globs.userPayload);
+        Globs.udBoolSet(true, Globs.userLogin);
+
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const OnBoardingView(),
+            ),
+            (route) => false);
+      } else {
+        mdShowAlert(Globs.appName,
+            responseObj[KKey.message] as String? ?? MSG.fail, () {});
+      }
+    }, failure: (err) async {
+      Globs.hideHUD();
+      mdShowAlert(Globs.appName, err.toString(), () {});
+    });
   }
 }

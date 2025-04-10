@@ -1,6 +1,4 @@
 import 'package:custom_map_markers/custom_map_markers.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../common/color_extension.dart';
@@ -14,7 +12,7 @@ class ChangeAddressView extends StatefulWidget {
 }
 
 class _ChangeAddressViewState extends State<ChangeAddressView> {
-  GoogleMapController? _controller;
+  // GoogleMapController? _controller;
 
   final locations = const [
     LatLng(37.42796133580664, -122.085749655962),
@@ -91,7 +89,7 @@ class _ChangeAddressViewState extends State<ChangeAddressView> {
             // )),
             markers: markers,
             onMapCreated: (GoogleMapController controller) {
-              _controller = controller;
+              // _controller = controller;
             },
           );
         },

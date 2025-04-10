@@ -1,6 +1,11 @@
 import 'package:canteen_app/common/color_extension.dart';
+import 'package:canteen_app/common/extension.dart';
+import 'package:canteen_app/common/globs.dart';
 import 'package:canteen_app/common_widget/round_button.dart';
+import 'package:canteen_app/view/login/otp_view.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../common_widget/round_textfield.dart';
 
 class ResetPasswordView extends StatefulWidget {
@@ -36,8 +41,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                 height: 15,
               ),
               Text(
-                "Please enter your email to receive a\n reset code to create a new password via email",
-                textAlign: TextAlign.center,
+                "Please enter your email to receive a reset code",
                 style: TextStyle(
                     color: TColor.secondaryText,
                     fontSize: 14,
@@ -47,7 +51,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                 height: 60,
               ),
               RoundTextfield(
-                hintText: "Your Email",
+                hintText: "Email",
                 controller: txtEmail,
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -55,9 +59,9 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                 height: 30,
               ),
               RoundButton(
-                  title: "Send",
+                  title: "Next",
                   onPressed: () {
-                    // btnSubmit();
+                    btnSubmit();
                   }),
             ],
           ),
@@ -66,38 +70,49 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
     );
   }
 
-  //TODO: Action
-//   void btnSubmit() {
-//     if (!txtEmail.text.isEmail) {
-//       mdShowAlert(Globs.appName, MSG.enterEmail, () {});
-//       return;
-//     }
+  void btnSubmit() {
+    if (!txtEmail.text.isEmail) {
+      mdShowAlert(Globs.appName, MSG.enterEmail, () {});
+      return;
+    }
 
-//     endEditing();
+    endEditing();
 
-//     serviceCallForgotRequest({"email": txtEmail.text});
-//   }
+    serviceCallForgotRequest({"email": txtEmail.text});
+  }
 
-//   //TODO: ServiceCall
+  void serviceCallForgotRequest(Map<String, dynamic> parameter) async {
+    Globs.showHUD();
 
-//   void serviceCallForgotRequest(Map<String, dynamic> parameter) {
-//     Globs.showHUD();
+    try {
+      final response = await http.post(
+        Uri.parse(SVKey.svForgotPasswordRequest),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(parameter),
+      );
 
-//     ServiceCall.post(parameter, SVKey.svForgotPasswordRequest,
-//         withSuccess: (responseObj) async {
-//       Globs.hideHUD();
-//       if (responseObj[KKey.status] == "1") {
-//         Navigator.push(
-//             context,
-//             MaterialPageRoute(
-//                 builder: (context) => OTPView(email: txtEmail.text)));
-//       } else {
-//         mdShowAlert(Globs.appName,
-//             responseObj[KKey.message] as String? ?? MSG.fail, () {});
-//       }
-//     }, failure: (err) async {
-//       Globs.hideHUD();
-//       mdShowAlert(Globs.appName, err.toString(), () {});
-//     });
-//   }
+      Globs.hideHUD();
+
+      if (response.statusCode == 200) {
+        final responseObj = json.decode(response.body);
+        if (responseObj[KKey.status] == "1") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OTPView(email: txtEmail.text),
+            ),
+          );
+        } else {
+          mdShowAlert(Globs.appName,
+              responseObj[KKey.message] as String? ?? MSG.fail, () {});
+        }
+      } else {
+        mdShowAlert(Globs.appName,
+            "Failed to send reset code. Please try again.", () {});
+      }
+    } catch (err) {
+      Globs.hideHUD();
+      mdShowAlert(Globs.appName, err.toString(), () {});
+    }
+  }
 }

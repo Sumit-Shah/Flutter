@@ -1,9 +1,8 @@
 import 'dart:convert';
-
+import 'package:canteen_app/main.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:food_delivery/main.dart';
 
 class Globs {
   static const appName = "Canteen App";
@@ -79,7 +78,7 @@ class Globs {
 }
 
 class SVKey {
-  static const mainUrl = "http://192.168.1.2:3001";
+  static const mainUrl = "http://localhost:3001";
   static const baseUrl = '$mainUrl/api/';
   static const nodeUrl = mainUrl;
 
@@ -101,20 +100,6 @@ class KKey {
   static const address = "address";
   static const userId = "user_id";
   static const resetCode = "reset_code";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
-  // static const  = "";
 }
 
 class MSG {

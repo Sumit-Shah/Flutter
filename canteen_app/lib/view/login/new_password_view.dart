@@ -1,6 +1,11 @@
 import 'package:canteen_app/common/color_extension.dart';
+import 'package:canteen_app/common/extension.dart';
+import 'package:canteen_app/common/globs.dart';
 import 'package:canteen_app/common_widget/round_button.dart';
+import 'package:canteen_app/view/login/login_view.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../common_widget/round_textfield.dart';
 
 class NewPasswordView extends StatefulWidget {
@@ -66,7 +71,7 @@ class _NewPasswordViewState extends State<NewPasswordView> {
               RoundButton(
                   title: "Next",
                   onPressed: () {
-                    // btnSubmit();
+                    btnSubmit();
                   }),
             ],
           ),
@@ -75,51 +80,62 @@ class _NewPasswordViewState extends State<NewPasswordView> {
     );
   }
 
-  //TODO: Action
-  // void btnSubmit() {
-  //   if (txtPassword.text.length < 6) {
-  //     mdShowAlert(Globs.appName, MSG.enterPassword, () {});
-  //     return;
-  //   }
+  // TODO: Action
+  void btnSubmit() {
+    if (txtPassword.text.length < 6) {
+      mdShowAlert(Globs.appName, MSG.enterPassword, () {});
+      return;
+    }
 
-  //   if (txtPassword.text != txtConfirmPassword.text) {
-  //     mdShowAlert(Globs.appName, MSG.enterPasswordNotMatch, () {});
-  //     return;
-  //   }
+    if (txtPassword.text != txtConfirmPassword.text) {
+      mdShowAlert(Globs.appName, MSG.enterPasswordNotMatch, () {});
+      return;
+    }
 
-  //   endEditing();
+    endEditing();
 
-  //   serviceCallForgotSetNew({
-  //     "user_id": widget.nObj[KKey.userId].toString(),
-  //     "reset_code": widget.nObj[KKey.resetCode].toString(),
-  //     "new_password": txtPassword.text
-  //   });
-  // }
+    serviceCallForgotSetNew({
+      "user_id": widget.nObj[KKey.userId].toString(),
+      "reset_code": widget.nObj[KKey.resetCode].toString(),
+      "new_password": txtPassword.text
+    });
+  }
 
-  //TODO: ServiceCall
+  // TODO: ServiceCall
 
-//   void serviceCallForgotSetNew(Map<String, dynamic> parameter) {
-//     Globs.showHUD();
+  void serviceCallForgotSetNew(Map<String, dynamic> parameter) async {
+    Globs.showHUD();
 
-//     ServiceCall.post(parameter, SVKey.svForgotPasswordSetNew,
-//         withSuccess: (responseObj) async {
-//       Globs.hideHUD();
-//       if (responseObj[KKey.status] == "1") {
-//         mdShowAlert(
-//             Globs.appName, responseObj[KKey.message] as String? ?? MSG.success,
-//             () {
-//           Navigator.pushAndRemoveUntil(
-//               context,
-//               MaterialPageRoute(builder: (context) => const LoginView()),
-//               (route) => false);
-//         });
-//       } else {
-//         mdShowAlert(Globs.appName,
-//             responseObj[KKey.message] as String? ?? MSG.fail, () {});
-//       }
-//     }, failure: (err) async {
-//       Globs.hideHUD();
-//       mdShowAlert(Globs.appName, err.toString(), () {});
-//     });
-//   }
+    try {
+      final response = await http.post(
+        Uri.parse(SVKey.svForgotPasswordSetNew),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(parameter),
+      );
+
+      Globs.hideHUD();
+
+      if (response.statusCode == 200) {
+        final responseObj = json.decode(response.body);
+        if (responseObj[KKey.status] == "1") {
+          mdShowAlert(Globs.appName,
+              responseObj[KKey.message] as String? ?? MSG.success, () {
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginView()),
+                (route) => false);
+          });
+        } else {
+          mdShowAlert(Globs.appName,
+              responseObj[KKey.message] as String? ?? MSG.fail, () {});
+        }
+      } else {
+        mdShowAlert(Globs.appName,
+            "Failed to set new password. Please try again.", () {});
+      }
+    } catch (err) {
+      Globs.hideHUD();
+      mdShowAlert(Globs.appName, err.toString(), () {});
+    }
+  }
 }

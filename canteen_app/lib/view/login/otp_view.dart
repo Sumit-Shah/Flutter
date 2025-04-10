@@ -1,15 +1,12 @@
 import 'package:canteen_app/common/color_extension.dart';
+import 'package:canteen_app/common/extension.dart';
+import 'package:canteen_app/common/globs.dart';
 import 'package:canteen_app/common_widget/round_button.dart';
+import 'package:canteen_app/view/login/new_password_view.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:otp_pin_field/otp_pin_field.dart';
-// import 'package:food_delivery/common/color_extension.dart';
-// import 'package:food_delivery/common/extension.dart';
-// import 'package:food_delivery/common_widget/round_button.dart';
-// import 'package:food_delivery/view/login/new_password_view.dart';
-// import 'package:otp_pin_field/otp_pin_field.dart';
-
-// import '../../common/globs.dart';
-// import '../../common/service_call.dart';
+import 'dart:convert';
 
 class OTPView extends StatefulWidget {
   final String email;
@@ -70,7 +67,7 @@ class _OTPViewState extends State<OTPView> {
                     /// to clear the Otp pin Controller
                     onSubmit: (newCode) {
                       code = newCode;
-                      // btnSubmit();
+                      btnSubmit();
 
                       /// return the entered pin
                     },
@@ -138,11 +135,11 @@ class _OTPViewState extends State<OTPView> {
               RoundButton(
                   title: "Next",
                   onPressed: () {
-                    // btnSubmit();
+                    btnSubmit();
                   }),
               TextButton(
                 onPressed: () {
-                  // serviceCallForgotRequest({"email": widget.email});
+                  serviceCallForgotRequest({"email": widget.email});
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -172,58 +169,82 @@ class _OTPViewState extends State<OTPView> {
   }
 
   //TODO: Action
-//   void btnSubmit() {
-//     if (code.length != 6) {
-//       mdShowAlert(Globs.appName, MSG.enterCode, () {});
-//       return;
-//     }
+  void btnSubmit() {
+    if (code.length != 6) {
+      mdShowAlert(Globs.appName, MSG.enterCode, () {});
+      return;
+    }
 
-//     endEditing();
+    endEditing();
 
-//     serviceCallForgotVerify({"email": widget.email, "reset_code": code});
-//   }
+    serviceCallForgotVerify({"email": widget.email, "reset_code": code});
+  }
 
 //   //TODO: ServiceCall
 
-//   void serviceCallForgotVerify(Map<String, dynamic> parameter) {
-//     Globs.showHUD();
+  void serviceCallForgotVerify(Map<String, dynamic> parameter) async {
+    Globs.showHUD();
 
-//     ServiceCall.post(parameter, SVKey.svForgotPasswordVerify,
-//         withSuccess: (responseObj) async {
-//       Globs.hideHUD();
-//       if (responseObj[KKey.status] == "1") {
-//         var payloadObj = responseObj[KKey.payload] as Map? ?? {};
-//         Navigator.push(
-//             context,
-//             MaterialPageRoute(
-//                 builder: (context) => NewPasswordView(nObj: payloadObj,)));
-//       } else {
-//         mdShowAlert(Globs.appName,
-//             responseObj[KKey.message] as String? ?? MSG.fail, () {});
-//       }
-//     }, failure: (err) async {
-//       Globs.hideHUD();
-//       mdShowAlert(Globs.appName, err.toString(), () {});
-//     });
-//   }
+    try {
+      final response = await http.post(
+        Uri.parse(SVKey.svForgotPasswordVerify),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(parameter),
+      );
 
-//   void serviceCallForgotRequest(Map<String, dynamic> parameter) {
-//     Globs.showHUD();
+      Globs.hideHUD();
 
-//     ServiceCall.post(parameter, SVKey.svForgotPasswordRequest,
-//         withSuccess: (responseObj) async {
-//       Globs.hideHUD();
-//       if (responseObj[KKey.status] == "1") {
-//          mdShowAlert(Globs.appName,
-//             "reset code successfully", () {});
+      if (response.statusCode == 200) {
+        final responseObj = json.decode(response.body);
+        if (responseObj[KKey.status] == "1") {
+          var payloadObj = responseObj[KKey.payload] as Map? ?? {};
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => NewPasswordView(
+                        nObj: payloadObj,
+                      )));
+        } else {
+          mdShowAlert(Globs.appName,
+              responseObj[KKey.message] as String? ?? MSG.fail, () {});
+        }
+      } else {
+        mdShowAlert(
+            Globs.appName, "Failed to verify OTP. Please try again.", () {});
+      }
+    } catch (err) {
+      Globs.hideHUD();
+      mdShowAlert(Globs.appName, err.toString(), () {});
+    }
+  }
 
-//       } else {
-//         mdShowAlert(Globs.appName,
-//             responseObj[KKey.message] as String? ?? MSG.fail, () {});
-//       }
-//     }, failure: (err) async {
-//       Globs.hideHUD();
-//       mdShowAlert(Globs.appName, err.toString(), () {});
-//     });
-//   }
+  void serviceCallForgotRequest(Map<String, dynamic> parameter) async {
+    Globs.showHUD();
+
+    try {
+      final response = await http.post(
+        Uri.parse(SVKey.svForgotPasswordRequest),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(parameter),
+      );
+
+      Globs.hideHUD();
+
+      if (response.statusCode == 200) {
+        final responseObj = json.decode(response.body);
+        if (responseObj[KKey.status] == "1") {
+          mdShowAlert(Globs.appName, "Reset code sent successfully", () {});
+        } else {
+          mdShowAlert(Globs.appName,
+              responseObj[KKey.message] as String? ?? MSG.fail, () {});
+        }
+      } else {
+        mdShowAlert(Globs.appName,
+            "Failed to send reset code. Please try again.", () {});
+      }
+    } catch (err) {
+      Globs.hideHUD();
+      mdShowAlert(Globs.appName, err.toString(), () {});
+    }
+  }
 }
