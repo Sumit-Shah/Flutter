@@ -2,6 +2,7 @@ import 'package:canteen_app/common/color_extension.dart';
 import 'package:canteen_app/common/extension.dart';
 import 'package:canteen_app/common/globs.dart';
 import 'package:canteen_app/common_widget/round_button.dart';
+import 'package:canteen_app/view/admin/admin_dashboard_view.dart';
 import 'package:canteen_app/view/login/reset_password_view.dart';
 import 'package:canteen_app/view/login/sign_up_view.dart' show SignUpView;
 import 'package:canteen_app/view/on_boarding/on_boarding_view.dart';
@@ -181,7 +182,7 @@ class _LoginViewState extends State<LoginView> {
     });
   }
 
-  //TODO: ServiceCall
+  // TODO: ServiceCall
 
   void serviceCallLogin(Map<String, dynamic> parameter) {
     Globs.showHUD();
@@ -193,13 +194,25 @@ class _LoginViewState extends State<LoginView> {
         Globs.udSet(responseObj[KKey.payload] as Map? ?? {}, Globs.userPayload);
         Globs.udBoolSet(true, Globs.userLogin);
 
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const OnBoardingView(),
-            ),
-            (route) => false);
-      } else {
+        //if block is for user login
+        if (responseObj[KKey.payload][KKey.userId] == 3) {
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AdminDashboardView(),
+              ),
+              (route) => false);
+        } else {
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const OnBoardingView(),
+              ),
+              (route) => false);
+        }
+      }
+      //else block is for admin
+      else {
         mdShowAlert(Globs.appName,
             responseObj[KKey.message] as String? ?? MSG.fail, () {});
       }

@@ -1,5 +1,7 @@
+import 'dart:convert';
+
 import 'package:canteen_app/common/globs.dart';
-import 'package:canteen_app/view/login/welcome_view.dart';
+import 'package:canteen_app/view/admin/admin_dashboard_view.dart';
 import 'package:canteen_app/view/main_tabview/main_tabview.dart';
 import 'package:flutter/material.dart';
 
@@ -23,12 +25,14 @@ class _StarupViewState extends State<StartupView> {
   }
 
   void welcomePage() {
-    if (Globs.udValueBool(Globs.userLogin)) {
+    final session = json.decode(Globs.udValueString(Globs.userPayload));
+
+    if (session["user_type"] == 1) {
       Navigator.push(context,
           MaterialPageRoute(builder: (context) => const MainTabView()));
     } else {
       Navigator.push(context,
-          MaterialPageRoute(builder: (context) => const WelcomeView()));
+          MaterialPageRoute(builder: (context) => const AdminDashboardView()));
     }
   }
 

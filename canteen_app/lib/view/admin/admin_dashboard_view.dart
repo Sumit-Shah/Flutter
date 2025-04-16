@@ -1,7 +1,6 @@
 import 'package:canteen_app/common/color_extension.dart';
-import 'package:canteen_app/common/globs.dart';
+import 'package:canteen_app/common/service_call.dart';
 import 'package:flutter/material.dart';
-import 'restaurant_management_view.dart';
 import 'menu_management_view.dart';
 import 'category_management_view.dart';
 import 'offer_management_view.dart';
@@ -19,126 +18,128 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Admin Dashboard",
-          style: TextStyle(
-            color: TColor.primaryText,
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
+        title: const Text("Admin Dashboard"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              // Implement logout functionality
+              ServiceCall.logout();
+            },
           ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        ],
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildManagementCard(
-                "Restaurant Management",
-                "Manage restaurants and their details",
-                Icons.restaurant,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RestaurantManagementView(),
-                    ),
-                  );
-                },
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Management Sections",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 20),
-              _buildManagementCard(
-                "Menu Management",
-                "Manage menu items and prices",
-                Icons.menu_book,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const MenuManagementView(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              _buildManagementCard(
-                "Category Management",
-                "Manage food categories",
-                Icons.category,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CategoryManagementView(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              _buildManagementCard(
-                "Offer Management",
-                "Manage special offers and discounts",
-                Icons.local_offer,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const OfferManagementView(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              _buildManagementCard(
-                "About Management",
-                "Manage about section content",
-                Icons.info,
-                () {
-                  // Navigator.push(
-                  // context,
-                  // MaterialPageRoute(
-                  // builder: (context) => const AboutManagementView(),
-                  // ),
-                  // );
-                },
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 20),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 20,
+              crossAxisSpacing: 20,
+              children: [
+                _buildManagementCard(
+                  icon: Icons.restaurant_menu,
+                  title: "Menu Management",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MenuManagementView(),
+                      ),
+                    );
+                  },
+                ),
+                _buildManagementCard(
+                  icon: Icons.category,
+                  title: "Category Management",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CategoryManagementView(),
+                      ),
+                    );
+                  },
+                ),
+                _buildManagementCard(
+                  icon: Icons.local_offer,
+                  title: "Offer Management",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const OfferManagementView(),
+                      ),
+                    );
+                  },
+                ),
+                _buildManagementCard(
+                  icon: Icons.info,
+                  title: "About Management",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AboutManagementView(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildManagementCard(
-      String title, String subtitle, IconData icon, VoidCallback onTap) {
+  Widget _buildManagementCard({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
     return Card(
       elevation: 4,
-      child: ListTile(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: InkWell(
         onTap: onTap,
-        leading: Icon(
-          icon,
-          size: 40,
-          color: TColor.primary,
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: TColor.primaryText,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+        borderRadius: BorderRadius.circular(15),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 40,
+                color: TColor.primary,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            color: TColor.secondaryText,
-            fontSize: 14,
-          ),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios),
       ),
     );
   }

@@ -1,10 +1,10 @@
-import 'package:canteen_app/common/color_extension.dart';
-import 'package:canteen_app/common/extension.dart';
-import 'package:canteen_app/common/globs.dart';
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../../common_widget/round_button.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:canteen_app/common/extension.dart';
+import 'package:canteen_app/common/globs.dart';
 import '../../common_widget/round_textfield.dart';
 
 class MenuManagementView extends StatefulWidget {
@@ -15,62 +15,61 @@ class MenuManagementView extends StatefulWidget {
 }
 
 class _MenuManagementViewState extends State<MenuManagementView> {
-  List<Map<String, dynamic>> menuItems = [];
-  List<Map<String, dynamic>> categories = [];
-  List<Map<String, dynamic>> restaurants = [];
+  List<Map<String, dynamic>> menus = [];
   bool isLoading = true;
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImage;
 
   @override
   void initState() {
     super.initState();
-    fetchData();
+    fetchMenus();
   }
 
-  Future<void> fetchData() async {
+  Future<void> fetchMenus() async {
     try {
-      // Fetch menu items
-      final menuResponse = await http.get(
-        Uri.parse('${SVKey.baseUrl}menu_items'),
-        headers: {'Content-Type': 'application/json'},
+      setState(() {
+        isLoading = true;
+      });
+
+      final session = json.decode(Globs.udValueString(Globs.userPayload));
+      Map<String, String> authHeader = {'access_token': session['auth_token']};
+      final response = await http.post(
+        Uri.parse(SVKey.svAdminMenuList),
+        headers: authHeader,
+        body: json.encode({}),
       );
 
-      // Fetch categories
-      final categoryResponse = await http.get(
-        Uri.parse('${SVKey.baseUrl}categories'),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      // Fetch restaurants
-      final restaurantResponse = await http.get(
-        Uri.parse('${SVKey.baseUrl}restaurants'),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (menuResponse.statusCode == 200 &&
-          categoryResponse.statusCode == 200 &&
-          restaurantResponse.statusCode == 200) {
-        final menuObj = json.decode(menuResponse.body);
-        final categoryObj = json.decode(categoryResponse.body);
-        final restaurantObj = json.decode(restaurantResponse.body);
-
-        if (menuObj[KKey.status] == "1" &&
-            categoryObj[KKey.status] == "1" &&
-            restaurantObj[KKey.status] == "1") {
+      if (response.statusCode == 200) {
+        final responseObj = json.decode(response.body);
+        if (responseObj[KKey.status] == "1") {
           setState(() {
-            menuItems = List<Map<String, dynamic>>.from(menuObj[KKey.payload]);
-            categories =
-                List<Map<String, dynamic>>.from(categoryObj[KKey.payload]);
-            restaurants =
-                List<Map<String, dynamic>>.from(restaurantObj[KKey.payload]);
+            menus = List<Map<String, dynamic>>.from(responseObj[KKey.payload]);
             isLoading = false;
           });
+        } else {
+          mdShowAlert(Globs.appName,
+              responseObj[KKey.message] ?? "Failed to fetch menu", () {});
         }
+      } else {
+        mdShowAlert(
+            Globs.appName, "Failed to fetch menus. Please try again.", () {});
       }
     } catch (err) {
+      mdShowAlert(Globs.appName, err.toString(), () {});
+    } finally {
       setState(() {
         isLoading = false;
       });
-      mdShowAlert(Globs.appName, err.toString(), () {});
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+      });
     }
   }
 
@@ -82,84 +81,94 @@ class _MenuManagementViewState extends State<MenuManagementView> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () {
-              _showAddEditMenuItemDialog();
-            },
+            onPressed: () => _showAddEditMenuDialog(),
           ),
         ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: menuItems.length,
-              itemBuilder: (context, index) {
-                final menuItem = menuItems[index];
-                return Card(
-                  child: ListTile(
-                    title: Text(menuItem['name']),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Price: \$${menuItem['price']}'),
-                        Text(
-                            'Category: ${_getCategoryName(menuItem['category_id'])}'),
-                        Text(
-                            'Restaurant: ${_getRestaurantName(menuItem['restaurant_id'])}'),
-                      ],
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            _showAddEditMenuItemDialog(menuItem: menuItem);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            _showDeleteConfirmationDialog(menuItem['id']);
-                          },
-                        ),
-                      ],
-                    ),
+          : menus.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.restaurant_menu,
+                          size: 50, color: Colors.grey),
+                      const SizedBox(height: 10),
+                      const Text("No Menu found"),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () => _showAddEditMenuDialog(),
+                        child: const Text("Add Menu"),
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
+                )
+              : RefreshIndicator(
+                  onRefresh: fetchMenus,
+                  child: ListView.builder(
+                    itemCount: menus.length,
+                    itemBuilder: (context, index) {
+                      final menu = menus[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: ListTile(
+                          leading: _buildMenuImage(menu),
+                          title: Text(menu['name'] ?? ''),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () =>
+                                    _showAddEditMenuDialog(menu: menu),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => _showDeleteConfirmationDialog(
+                                    menu['menu_id']),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
     );
   }
 
-  String _getCategoryName(int categoryId) {
-    final category = categories.firstWhere(
-      (c) => c['id'] == categoryId,
-      orElse: () => {'name': 'Unknown'},
-    );
-    return category['name'];
+  Widget _buildMenuImage(Map<String, dynamic> menu) {
+    final image = menu['image'];
+    if (image != null && image.toString().isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.network(
+          '${SVKey.mainUrl}/uploads/menu/$image',
+          width: 50,
+          height: 50,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              const Icon(Icons.broken_image, size: 30),
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
+      );
+    }
+    return const Icon(Icons.restaurant_menu, size: 30);
   }
 
-  String _getRestaurantName(int restaurantId) {
-    final restaurant = restaurants.firstWhere(
-      (r) => r['id'] == restaurantId,
-      orElse: () => {'name': 'Unknown'},
-    );
-    return restaurant['name'];
-  }
-
-  void _showAddEditMenuItemDialog({Map<String, dynamic>? menuItem}) {
-    final nameController = TextEditingController(text: menuItem?['name']);
-    final priceController =
-        TextEditingController(text: menuItem?['price']?.toString());
-    final descriptionController =
-        TextEditingController(text: menuItem?['description']);
-    int? selectedCategoryId = menuItem?['category_id'];
-    int? selectedRestaurantId = menuItem?['restaurant_id'];
+  void _showAddEditMenuDialog({Map<String, dynamic>? menu}) {
+    final nameController = TextEditingController(text: menu?['name']);
+    _selectedImage = null;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(menuItem == null ? 'Add Menu Item' : 'Edit Menu Item'),
+        title: Text(menu == null ? 'Add Menu' : 'Edit Menu'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -168,61 +177,37 @@ class _MenuManagementViewState extends State<MenuManagementView> {
                 hintText: "Name",
                 controller: nameController,
               ),
-              const SizedBox(height: 10),
-              RoundTextfield(
-                hintText: "Price",
-                controller: priceController,
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<int>(
-                value: selectedCategoryId,
-                decoration: InputDecoration(
-                  labelText: 'Category',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  child: _selectedImage != null
+                      ? Image.file(_selectedImage!, fit: BoxFit.cover)
+                      : (menu != null &&
+                              menu['image'] != null &&
+                              menu['image'].toString().isNotEmpty)
+                          ? Image.network(
+                              '${SVKey.mainUrl}/uploads/menu/${menu['image']}',
+                              fit: BoxFit.cover,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.add_photo_alternate,
+                                      size: 50),
+                            )
+                          : const Icon(Icons.add_photo_alternate, size: 50),
                 ),
-                items: categories.map((category) {
-                  return DropdownMenuItem<int>(
-                    value: category['id'],
-                    child: Text(category['name']),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  selectedCategoryId = value;
-                },
-              ),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<int>(
-                value: selectedRestaurantId,
-                decoration: InputDecoration(
-                  labelText: 'Restaurant',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                items: restaurants.map((restaurant) {
-                  return DropdownMenuItem<int>(
-                    value: restaurant['id'],
-                    child: Text(restaurant['name']),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  selectedRestaurantId = value;
-                },
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: descriptionController,
-                decoration: InputDecoration(
-                  hintText: "Description",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                maxLines: 3,
-                minLines: 3,
               ),
             ],
           ),
@@ -234,21 +219,16 @@ class _MenuManagementViewState extends State<MenuManagementView> {
           ),
           TextButton(
             onPressed: () async {
-              final data = {
-                'name': nameController.text,
-                'price': double.parse(priceController.text),
-                'description': descriptionController.text,
-                'category_id': selectedCategoryId,
-                'restaurant_id': selectedRestaurantId,
-              };
-
-              if (menuItem != null) {
-                data['id'] = menuItem['id'];
-                await _updateMenuItem(data);
-              } else {
-                await _addMenuItem(data);
+              if (nameController.text.isEmpty) {
+                mdShowAlert(Globs.appName, "Please enter menu name", () {});
+                return;
               }
-              Navigator.pop(context);
+
+              if (menu != null) {
+                await _updateMenu(menu['menu_id'], nameController.text);
+              } else {
+                await _addMenu(nameController.text);
+              }
             },
             child: const Text('Save'),
           ),
@@ -257,52 +237,99 @@ class _MenuManagementViewState extends State<MenuManagementView> {
     );
   }
 
-  Future<void> _addMenuItem(Map<String, dynamic> data) async {
+  Future<void> _addMenu(String name) async {
     try {
-      final response = await http.post(
-        Uri.parse('${SVKey.baseUrl}menu_items'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(data),
+      Globs.showHUD();
+      final session = json.decode(Globs.udValueString(Globs.userPayload));
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse(SVKey.svAdminMenuAdd),
       );
 
-      if (response.statusCode == 200) {
-        final responseObj = json.decode(response.body);
-        if (responseObj[KKey.status] == "1") {
-          fetchData();
-          mdShowAlert(Globs.appName, "Menu item added successfully", () {});
+      request.headers['access_token'] = session['auth_token'];
+      request.fields['name'] = name;
+
+      if (_selectedImage != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image',
+            _selectedImage!.path,
+          ),
+        );
+      }
+
+      final response = await request.send();
+      final responseData = await response.stream.bytesToString();
+      final responseObj = json.decode(responseData);
+
+      Globs.hideHUD();
+
+      if (response.statusCode == 200 && responseObj[KKey.status] == "1") {
+        if (mounted) {
+          Navigator.pop(context);
+          fetchMenus();
+          mdShowAlert(Globs.appName, "Menu added successfully", () {});
         }
+      } else {
+        mdShowAlert(Globs.appName,
+            responseObj[KKey.message] ?? "Failed to add menu", () {});
       }
     } catch (err) {
+      Globs.hideHUD();
       mdShowAlert(Globs.appName, err.toString(), () {});
     }
   }
 
-  Future<void> _updateMenuItem(Map<String, dynamic> data) async {
+  Future<void> _updateMenu(int menuId, String name) async {
     try {
-      final response = await http.put(
-        Uri.parse('${SVKey.baseUrl}menu_items/${data['id']}'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(data),
+      Globs.showHUD();
+      final session = json.decode(Globs.udValueString(Globs.userPayload));
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse(SVKey.svAdminMenuUpdate),
       );
 
-      if (response.statusCode == 200) {
-        final responseObj = json.decode(response.body);
-        if (responseObj[KKey.status] == "1") {
-          fetchData();
-          mdShowAlert(Globs.appName, "Menu item updated successfully", () {});
+      request.headers['access_token'] = session['auth_token'];
+      request.fields['menu_id'] = menuId.toString();
+      request.fields['name'] = name;
+
+      if (_selectedImage != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image',
+            _selectedImage!.path,
+          ),
+        );
+      }
+
+      final response = await request.send();
+      final responseData = await response.stream.bytesToString();
+      final responseObj = json.decode(responseData);
+
+      Globs.hideHUD();
+
+      if (response.statusCode == 200 && responseObj[KKey.status] == "1") {
+        if (mounted) {
+          Navigator.pop(context);
+          fetchMenus();
+          mdShowAlert(Globs.appName, "Menu updated successfully", () {});
         }
+      } else {
+        mdShowAlert(Globs.appName,
+            responseObj[KKey.message] ?? "Failed to update menu", () {});
       }
     } catch (err) {
+      Globs.hideHUD();
       mdShowAlert(Globs.appName, err.toString(), () {});
     }
   }
 
-  void _showDeleteConfirmationDialog(int menuItemId) {
+  void _showDeleteConfirmationDialog(int menuId) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Menu Item'),
-        content: const Text('Are you sure you want to delete this menu item?'),
+        title: const Text('Delete Menu'),
+        content: const Text('Are you sure you want to delete this Menu Item?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -310,8 +337,8 @@ class _MenuManagementViewState extends State<MenuManagementView> {
           ),
           TextButton(
             onPressed: () async {
-              await _deleteMenuItem(menuItemId);
               Navigator.pop(context);
+              await _deleteMenu(menuId);
             },
             child: const Text('Delete'),
           ),
@@ -320,21 +347,38 @@ class _MenuManagementViewState extends State<MenuManagementView> {
     );
   }
 
-  Future<void> _deleteMenuItem(int menuItemId) async {
+  Future<void> _deleteMenu(int menuId) async {
     try {
-      final response = await http.delete(
-        Uri.parse('${SVKey.baseUrl}menu_items/$menuItemId'),
-        headers: {'Content-Type': 'application/json'},
+      Globs.showHUD();
+      final session = json.decode(Globs.udValueString(Globs.userPayload));
+      final response = await http.post(
+        Uri.parse(SVKey.svAdminMenuDelete),
+        headers: {
+          'access_token': session['auth_token'],
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'menu_id': menuId}),
       );
+
+      Globs.hideHUD();
 
       if (response.statusCode == 200) {
         final responseObj = json.decode(response.body);
         if (responseObj[KKey.status] == "1") {
-          fetchData();
-          mdShowAlert(Globs.appName, "Menu item deleted successfully", () {});
+          if (mounted) {
+            fetchMenus();
+            mdShowAlert(Globs.appName, "Menu deleted successfully", () {});
+          }
+        } else {
+          mdShowAlert(Globs.appName,
+              responseObj[KKey.message] ?? "Failed to delete menu", () {});
         }
+      } else {
+        mdShowAlert(
+            Globs.appName, "Failed to delete menu. Please try again.", () {});
       }
     } catch (err) {
+      Globs.hideHUD();
       mdShowAlert(Globs.appName, err.toString(), () {});
     }
   }

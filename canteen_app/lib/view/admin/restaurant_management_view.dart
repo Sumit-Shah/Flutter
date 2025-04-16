@@ -1,10 +1,8 @@
-import 'package:canteen_app/common/color_extension.dart';
 import 'package:canteen_app/common/extension.dart';
 import 'package:canteen_app/common/globs.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../../common_widget/round_button.dart';
 import '../../common_widget/round_textfield.dart';
 
 class RestaurantManagementView extends StatefulWidget {

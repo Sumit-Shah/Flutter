@@ -78,7 +78,9 @@ class Globs {
 }
 
 class SVKey {
+  // static const mainUrl = "http://192.168.1.79:3001";
   static const mainUrl = "http://localhost:3001";
+  static const imageUrl = "http://localhost:3001/img/";
   static const baseUrl = '$mainUrl/api/';
   static const nodeUrl = mainUrl;
 
@@ -87,6 +89,26 @@ class SVKey {
   static const svForgotPasswordRequest = '${baseUrl}forgot_password_request';
   static const svForgotPasswordVerify = '${baseUrl}forgot_password_verify';
   static const svForgotPasswordSetNew = '${baseUrl}forgot_password_set_new';
+
+  // Admin endpoints
+  static const svAdminCategoryList = '${baseUrl}admin/category_list';
+  static const svAdminCategoryAdd = '${baseUrl}admin/category_add';
+  static const svAdminCategoryUpdate = '${baseUrl}admin/category_update';
+  static const svAdminCategoryDelete = '${baseUrl}admin/category_delete';
+
+  // User endpoints
+  static const svUserCategoryList = '${baseUrl}user/category_list';
+
+  // Menu endpoints
+  static const svAdminMenuList = '${baseUrl}admin/menu_list';
+  static const svAdminMenuAdd = '${baseUrl}admin/menu_add';
+  static const svAdminMenuUpdate = '${baseUrl}admin/menu_update';
+  static const svAdminMenuDelete = '${baseUrl}admin/menu_delete';
+
+  // User menu items endpoints
+  static const svUserMenuItemsList = '${baseUrl}user/menu_items_list';
+  static const svUserMenuItemsByCategory =
+      '${baseUrl}user/menu_items_by_category';
 }
 
 class KKey {

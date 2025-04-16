@@ -5,24 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="decfa86d-c74b-4550-8faa-841ad4a70f6b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Flutter.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Flutter.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/common/extension.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/common/extension.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/common/globs.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/common/globs.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/common/service_call.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/common/service_call.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/canteen_app/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/home/home_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/home/home_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/login_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/login/login_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/new_password_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/login/new_password_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/otp_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/login/otp_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/rest_password_view.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/sing_up_view.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/login/welcome_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/login/welcome_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/more/change_address_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/more/change_address_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/more/more_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/more/more_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/on_boarding/on_boarding_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/on_boarding/on_boarding_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/on_boarding/startup_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/on_boarding/startup_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/canteen_app/test/widget_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/test/widget_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/admin/about_management_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/admin/about_management_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/admin/admin_dashboard_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/admin/admin_dashboard_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/admin/category_management_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/admin/category_management_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/admin/menu_management_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/admin/menu_management_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/admin/offer_management_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/admin/offer_management_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/canteen_app/lib/view/admin/restaurant_management_view.dart" beforeDir="false" afterPath="$PROJECT_DIR$/canteen_app/lib/view/admin/restaurant_management_view.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,21 +34,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/shah/Documents/Flutter",
-    "settings.editor.selected.configurable": "dart.settings"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/shah/Documents/Flutter&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;dart.settings&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

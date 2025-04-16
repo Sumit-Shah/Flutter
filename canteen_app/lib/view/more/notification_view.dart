@@ -30,19 +30,19 @@ class _NotificationsViewState extends State<NotificationsView> {
     },
     {
       "title": "Your orders has been picked up",
-      "time": "05 Jun 2023",
+      "time": "05 Jun 2025",
     },
     {
       "title": "Your order has been delivered",
-      "time": "05 Jun 2023",
+      "time": "05 Jun 2025",
     },
     {
       "title": "Your orders has been picked up",
-      "time": "06 Jun 2023",
+      "time": "06 Jun 2025",
     },
     {
       "title": "Your order has been delivered",
-      "time": "06 Jun 2023",
+      "time": "06 Jun 2025",
     },
   ];
 
