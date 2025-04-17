@@ -38,7 +38,7 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
       final session = json.decode(Globs.udValueString(Globs.userPayload));
       Map<String, String> authHeader = {'access_token': session['auth_token']};
       final response = await http.post(
-        Uri.parse(SVKey.svAdminMenuList),
+        Uri.parse(SVKey.svAdminMenuItemsList),
         headers: authHeader,
         body: {'category_id': widget.category["category_id"].toString()},
       );
@@ -407,10 +407,12 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
 
               if (menuItem != null) {
                 await _updateMenuItem(
-                    menuItem['menu_id'],
-                    nameController.text,
-                    double.parse(priceController.text),
-                    descriptionController.text);
+                  menuItem["menu_item_id"].toString(),
+                  menuItem["category_id"].toString(),
+                  nameController.text,
+                  double.parse(priceController.text),
+                  descriptionController.text,
+                );
               } else {
                 await _addMenuItem(
                     nameController.text,
@@ -432,7 +434,7 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
       final session = json.decode(Globs.udValueString(Globs.userPayload));
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse(SVKey.svAdminMenuAdd),
+        Uri.parse(SVKey.svAdminMenuItemsAdd),
       );
 
       request.headers['access_token'] = session['auth_token'];
@@ -472,20 +474,21 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
     }
   }
 
-  Future<void> _updateMenuItem(
-      int menuId, String name, double price, String description) async {
+  Future<void> _updateMenuItem(String menu_item_id, String category_id,
+      String name, double price, String description) async {
     try {
       Globs.showHUD();
       final session = json.decode(Globs.udValueString(Globs.userPayload));
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse(SVKey.svAdminMenuUpdate),
+        Uri.parse(SVKey.svAdminMenuItemsUpdate),
       );
 
       request.headers['access_token'] = session['auth_token'];
-      request.fields['menu_id'] = menuId.toString();
       request.fields['name'] = name;
-      request.fields['price'] = price.toString();
+      request.fields['base_price'] = price.toString();
+      request.fields['menu_item_id'] = menu_item_id;
+      request.fields['category_id'] = category_id;
       request.fields['description'] = description;
 
       if (_selectedImage != null) {
@@ -547,7 +550,7 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
       Globs.showHUD();
       final session = json.decode(Globs.udValueString(Globs.userPayload));
       final response = await http.post(
-        Uri.parse(SVKey.svAdminMenuDelete),
+        Uri.parse(SVKey.svAdminMenuItemsDelete),
         headers: {
           'access_token': session['auth_token'],
           'Content-Type': 'application/json',

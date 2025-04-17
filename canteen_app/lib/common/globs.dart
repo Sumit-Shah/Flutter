@@ -105,6 +105,12 @@ class SVKey {
   static const svAdminMenuUpdate = '${baseUrl}admin/menu_update';
   static const svAdminMenuDelete = '${baseUrl}admin/menu_delete';
 
+  // Menu_item endpoints
+  static const svAdminMenuItemsList = '${baseUrl}admin/menu_item_list';
+  static const svAdminMenuItemsAdd = '${baseUrl}admin/menu_item_add';
+  static const svAdminMenuItemsUpdate = '${baseUrl}admin/menu_item_update';
+  static const svAdminMenuItemsDelete = '${baseUrl}admin/menu_item_delete';
+
   // User menu items endpoints
   static const svUserMenuItemsList = '${baseUrl}user/menu_items_list';
   static const svUserMenuItemsByCategory =

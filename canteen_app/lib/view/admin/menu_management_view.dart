@@ -35,7 +35,7 @@ class _MenuManagementViewState extends State<MenuManagementView> {
       final session = json.decode(Globs.udValueString(Globs.userPayload));
       Map<String, String> authHeader = {'access_token': session['auth_token']};
       final response = await http.post(
-        Uri.parse(SVKey.svAdminMenuList),
+        Uri.parse(SVKey.svAdminMenuItemsList),
         headers: authHeader,
         body: json.encode({}),
       );
@@ -243,7 +243,7 @@ class _MenuManagementViewState extends State<MenuManagementView> {
       final session = json.decode(Globs.udValueString(Globs.userPayload));
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse(SVKey.svAdminMenuAdd),
+        Uri.parse(SVKey.svAdminMenuItemsAdd),
       );
 
       request.headers['access_token'] = session['auth_token'];
@@ -286,7 +286,7 @@ class _MenuManagementViewState extends State<MenuManagementView> {
       final session = json.decode(Globs.udValueString(Globs.userPayload));
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse(SVKey.svAdminMenuUpdate),
+        Uri.parse(SVKey.svAdminMenuItemsUpdate),
       );
 
       request.headers['access_token'] = session['auth_token'];
@@ -352,7 +352,7 @@ class _MenuManagementViewState extends State<MenuManagementView> {
       Globs.showHUD();
       final session = json.decode(Globs.udValueString(Globs.userPayload));
       final response = await http.post(
-        Uri.parse(SVKey.svAdminMenuDelete),
+        Uri.parse(SVKey.svAdminMenuItemsDelete),
         headers: {
           'access_token': session['auth_token'],
           'Content-Type': 'application/json',

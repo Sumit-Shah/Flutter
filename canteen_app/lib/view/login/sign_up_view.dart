@@ -23,7 +23,7 @@ class _SignUpViewState extends State<SignUpView> {
   final TextEditingController txtConfirmPassword = TextEditingController();
   final TextEditingController txtMobile = TextEditingController();
   final TextEditingController txtAddress = TextEditingController();
-  String _pushToken = "";
+  final String _pushToken = "";
   String _deviceType = "unknown";
 
   @override
