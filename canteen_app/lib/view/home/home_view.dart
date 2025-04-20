@@ -1,8 +1,8 @@
 import 'package:canteen_app/common/color_extension.dart';
-import 'package:canteen_app/common/globs.dart';
-import 'package:canteen_app/common/service_call.dart';
 import 'package:canteen_app/common_widget/round_textfield.dart';
 import 'package:flutter/material.dart';
+import '../../common/globs.dart';
+import '../../common/service_call.dart';
 import '../../common_widget/category_cell.dart';
 import '../../common_widget/most_popular_cell.dart';
 import '../../common_widget/popular_resutaurant_row.dart';

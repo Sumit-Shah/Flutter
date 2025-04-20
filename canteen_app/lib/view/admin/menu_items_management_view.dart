@@ -20,8 +20,10 @@ class MenuItemsManagementView extends StatefulWidget {
 class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
   List<Map<String, dynamic>> menuItems = [];
   bool isLoading = true;
+  bool hasError = false;
   final ImagePicker _picker = ImagePicker();
   File? _selectedImage;
+  final int _maxImageSize = 5 * 1024 * 1024; // 5MB max image size
 
   @override
   void initState() {
@@ -30,49 +32,73 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
   }
 
   Future<void> fetchMenuItems() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
+    setState(() {
+      isLoading = true;
+      hasError = false;
+    });
 
+    try {
       final session = json.decode(Globs.udValueString(Globs.userPayload));
-      Map<String, String> authHeader = {'access_token': session['auth_token']};
-      final response = await http.post(
-        Uri.parse(SVKey.svAdminMenuItemsList),
-        headers: authHeader,
-        body: {'category_id': widget.category["category_id"].toString()},
-      );
+      final response = await http
+          .post(
+            Uri.parse(SVKey.svAdminMenuItemsList),
+            headers: {
+              'access_token': session['auth_token'] ?? '',
+              'Content-Type': 'application/json',
+            },
+            body: json.encode({
+              'category_id': widget.category['category_id'].toString(),
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      print('Response: ${response.statusCode}, ${response.body}');
 
       if (response.statusCode == 200) {
-        final responseObj = json.decode(response.body);
-        if (responseObj[KKey.status] == "1") {
+        final data = json.decode(response.body);
+        if (data['status'] == '1' && data['payload'] != null) {
           setState(() {
-            menuItems =
-                List<Map<String, dynamic>>.from(responseObj[KKey.payload]);
+            menuItems = List<Map<String, dynamic>>.from(data['payload']);
             isLoading = false;
           });
         } else {
-          mdShowAlert(Globs.appName,
-              responseObj[KKey.message] ?? "Failed to fetch menu items", () {});
+          throw Exception(data['message'] ?? 'Failed to fetch menu items');
         }
       } else {
-        mdShowAlert(Globs.appName,
-            "Failed to fetch menu items. Please try again.", () {});
+        throw Exception('Server error: ${response.statusCode}');
       }
-    } catch (err) {
-      mdShowAlert(Globs.appName, err.toString(), () {});
-    } finally {
+    } catch (e) {
+      print('Error: $e');
       setState(() {
         isLoading = false;
+        hasError = true;
       });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     }
   }
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
+      final file = File(image.path);
+      final fileSize = await file.length();
+      final extension = image.path.split('.').last.toLowerCase();
+
+      if (fileSize > _maxImageSize) {
+        mdShowAlert(Globs.appName, "Image size exceeds 5MB limit.", () {});
+        return;
+      }
+      if (!['jpg', 'jpeg', 'png'].contains(extension)) {
+        mdShowAlert(Globs.appName, "Please select a JPG or PNG image.", () {});
+        return;
+      }
+
       setState(() {
-        _selectedImage = File(image.path);
+        _selectedImage = file;
       });
     }
   }
@@ -127,139 +153,169 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : menuItems.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.restaurant_menu,
-                                size: 50, color: Colors.grey),
-                            const SizedBox(height: 10),
-                            const Text("No menu items found"),
-                            const SizedBox(height: 20),
-                            ElevatedButton(
-                              onPressed: () => _showAddEditMenuItemDialog(),
-                              child: const Text("Add Menu Item"),
-                            ),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: fetchMenuItems,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: menuItems.length,
-                          itemBuilder: (context, index) {
-                            final menuItem = menuItems[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 16),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  children: [
-                                    _buildMenuItemImage(menuItem),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            menuItem['name'] ?? '',
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Rs. ${menuItem['base_price'] ?? '0'}',
-                                            style: TextStyle(
-                                              color: TColor.primary,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          if (menuItem['description'] != null &&
-                                              menuItem['description']
-                                                  .toString()
-                                                  .isNotEmpty)
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.only(top: 8),
-                                              child: Text(
-                                                menuItem['description'],
-                                                style: TextStyle(
-                                                  color: Colors.grey[600],
-                                                  fontSize: 14,
+                : hasError
+                    ? _buildErrorView()
+                    : menuItems.isEmpty
+                        ? _buildEmptyView()
+                        : RefreshIndicator(
+                            onRefresh: fetchMenuItems,
+                            child: ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: menuItems.length,
+                              itemBuilder: (context, index) {
+                                final menuItem = menuItems[index];
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Row(
+                                      children: [
+                                        _buildMenuItemImage(menuItem),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                menuItem['name'] ?? '',
+                                                style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.edit),
-                                          onPressed: () =>
-                                              _showAddEditMenuItemDialog(
-                                                  menuItem: menuItem),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Rs. ${menuItem['base_price'] ?? '0'}',
+                                                style: TextStyle(
+                                                  color: TColor.primary,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              if (menuItem['description'] !=
+                                                      null &&
+                                                  menuItem['description']
+                                                      .toString()
+                                                      .isNotEmpty)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 8),
+                                                  child: Text(
+                                                    menuItem['description'],
+                                                    style: TextStyle(
+                                                      color: Colors.grey[600],
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
                                         ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () =>
-                                              _showDeleteConfirmationDialog(
-                                                  menuItem['menu_id']),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.edit),
+                                              onPressed: () =>
+                                                  _showAddEditMenuItemDialog(
+                                                      menuItem: menuItem),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.delete),
+                                              onPressed: () =>
+                                                  _showDeleteConfirmationDialog(
+                                                      menuItem[
+                                                              'menu_item_id'] ??
+                                                          menuItem['menu_id']),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryImage() {
-    final image = widget.category['image'];
-    if (image != null && image.toString().isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.network(
-          '${SVKey.mainUrl}/uploads/category/$image',
-          width: 60,
-          height: 60,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.category, size: 40),
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return const Center(child: CircularProgressIndicator());
-          },
+  Widget _buildErrorView() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.error, size: 50, color: Colors.red),
+        const SizedBox(height: 10),
+        const Text("Failed to load menu items"),
+        const SizedBox(height: 10),
+        ElevatedButton(
+          onPressed: fetchMenuItems,
+          child: const Text("Retry"),
         ),
-      );
-    }
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        color: TColor.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Icon(Icons.category, size: 40),
+      ],
     );
   }
 
+  Widget _buildEmptyView() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.restaurant_menu, size: 50, color: Colors.grey),
+        const SizedBox(height: 10),
+        const Text("No menu items found"),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () => _showAddEditMenuItemDialog(),
+          child: const Text("Add Menu Item"),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryImage() {
+    final imageUrl = _getImageUrl(widget.category['image'], isCategory: true);
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: TColor.textfield,
+      ),
+      child: imageUrl.isNotEmpty
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CircularProgressIndicator());
+                },
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.category, size: 30),
+              ),
+            )
+          : const Icon(Icons.category, size: 30),
+    );
+  }
+
+  String _getImageUrl(String? imagePath, {bool isCategory = false}) {
+    if (imagePath == null || imagePath.isEmpty) return '';
+    final baseUrl =
+        SVKey.imageUrl.endsWith('/') ? SVKey.imageUrl : '${SVKey.imageUrl}/';
+    final fullUrl = '$baseUrl$imagePath';
+    print('Image URL: $fullUrl');
+    return fullUrl;
+  }
+
   Widget _buildMenuItemImage(Map<String, dynamic> menuItem) {
-    if (menuItem['image'] == null || menuItem['image'].toString().isEmpty) {
+    final imageUrl = _getImageUrl(menuItem['image']);
+    if (imageUrl.isEmpty) {
       return Container(
         width: 60,
         height: 60,
@@ -274,7 +330,7 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: Image.network(
-        '${SVKey.mainUrl}/uploads/menu/${menuItem['image']}',
+        imageUrl,
         width: 60,
         height: 60,
         fit: BoxFit.cover,
@@ -307,7 +363,7 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
   void _showAddEditMenuItemDialog({Map<String, dynamic>? menuItem}) {
     final nameController = TextEditingController(text: menuItem?['name']);
     final priceController =
-        TextEditingController(text: menuItem?['price']?.toString());
+        TextEditingController(text: menuItem?['base_price']?.toString());
     final descriptionController =
         TextEditingController(text: menuItem?['description']);
     _selectedImage = null;
@@ -326,32 +382,14 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
               ),
               const SizedBox(height: 20),
               RoundTextfield(
-                hintText: "Price",
+                hintText: "Base Price",
                 controller: priceController,
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 20),
-              Container(
-                decoration: BoxDecoration(
-                  color: TColor.textfield,
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: TextField(
-                  controller: descriptionController,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 15),
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    hintText: "Description",
-                    hintStyle: TextStyle(
-                      color: TColor.placeholder,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
+              RoundTextfield(
+                hintText: "Description",
+                controller: descriptionController,
               ),
               const SizedBox(height: 20),
               GestureDetector(
@@ -362,29 +400,49 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: _selectedImage != null
-                      ? Image.file(_selectedImage!, fit: BoxFit.cover)
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                        )
                       : (menuItem != null &&
                               menuItem['image'] != null &&
                               menuItem['image'].toString().isNotEmpty)
-                          ? Image.network(
-                              '${SVKey.mainUrl}/uploads/menu/${menuItem['image']}',
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.add_photo_alternate,
-                                      size: 50),
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                _getImageUrl(menuItem['image']),
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                },
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.broken_image, size: 50),
+                              ),
                             )
                           : const Icon(Icons.add_photo_alternate, size: 50),
                 ),
               ),
+              if (_selectedImage != null)
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _selectedImage = null;
+                    });
+                  },
+                  child: const Text('Remove Image'),
+                ),
             ],
           ),
         ),
@@ -400,24 +458,28 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
                     Globs.appName, "Please enter menu item name", () {});
                 return;
               }
-              if (priceController.text.isEmpty) {
-                mdShowAlert(Globs.appName, "Please enter price", () {});
+              if (priceController.text.isEmpty ||
+                  double.tryParse(priceController.text) == null) {
+                mdShowAlert(Globs.appName, "Please enter a valid price", () {});
                 return;
               }
 
               if (menuItem != null) {
                 await _updateMenuItem(
-                  menuItem["menu_item_id"].toString(),
-                  menuItem["category_id"].toString(),
+                  menuItem['menu_item_id']?.toString() ??
+                      menuItem['menu_id']?.toString() ??
+                      '',
+                  widget.category['category_id'].toString(),
                   nameController.text,
                   double.parse(priceController.text),
                   descriptionController.text,
                 );
               } else {
                 await _addMenuItem(
-                    nameController.text,
-                    double.parse(priceController.text),
-                    descriptionController.text);
+                  nameController.text,
+                  double.parse(priceController.text),
+                  descriptionController.text,
+                );
               }
             },
             child: const Text('Save'),
@@ -440,10 +502,16 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
       request.headers['access_token'] = session['auth_token'];
       request.fields['category_id'] = widget.category['category_id'].toString();
       request.fields['name'] = name;
-      request.fields['price'] = price.toString();
+      request.fields['base_price'] = price.toString();
       request.fields['description'] = description;
 
       if (_selectedImage != null) {
+        final fileSize = await _selectedImage!.length();
+        if (fileSize > _maxImageSize) {
+          Globs.hideHUD();
+          mdShowAlert(Globs.appName, "Image size exceeds 5MB limit.", () {});
+          return;
+        }
         request.files.add(
           await http.MultipartFile.fromPath(
             'image',
@@ -470,11 +538,11 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
       }
     } catch (err) {
       Globs.hideHUD();
-      mdShowAlert(Globs.appName, err.toString(), () {});
+      mdShowAlert(Globs.appName, "Error: ${err.toString()}", () {});
     }
   }
 
-  Future<void> _updateMenuItem(String menu_item_id, String category_id,
+  Future<void> _updateMenuItem(String menuItemId, String categoryId,
       String name, double price, String description) async {
     try {
       Globs.showHUD();
@@ -485,13 +553,19 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
       );
 
       request.headers['access_token'] = session['auth_token'];
+      request.fields['menu_item_id'] = menuItemId;
+      request.fields['category_id'] = categoryId;
       request.fields['name'] = name;
       request.fields['base_price'] = price.toString();
-      request.fields['menu_item_id'] = menu_item_id;
-      request.fields['category_id'] = category_id;
       request.fields['description'] = description;
 
       if (_selectedImage != null) {
+        final fileSize = await _selectedImage!.length();
+        if (fileSize > _maxImageSize) {
+          Globs.hideHUD();
+          mdShowAlert(Globs.appName, "Image size exceeds 5MB limit.", () {});
+          return;
+        }
         request.files.add(
           await http.MultipartFile.fromPath(
             'image',
@@ -518,7 +592,7 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
       }
     } catch (err) {
       Globs.hideHUD();
-      mdShowAlert(Globs.appName, err.toString(), () {});
+      mdShowAlert(Globs.appName, "Error: ${err.toString()}", () {});
     }
   }
 
@@ -535,8 +609,8 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
               await _deleteMenuItem(menuId);
+              Navigator.pop(context);
             },
             child: const Text('Delete'),
           ),
@@ -577,7 +651,7 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
       }
     } catch (err) {
       Globs.hideHUD();
-      mdShowAlert(Globs.appName, err.toString(), () {});
+      mdShowAlert(Globs.appName, "Error: ${err.toString()}", () {});
     }
   }
 }
