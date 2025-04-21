@@ -66,6 +66,7 @@ class _CategoryManagementViewState extends State<CategoryManagementView> {
     }
   }
 
+  //image picker from the gallery
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {

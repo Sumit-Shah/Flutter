@@ -1,14 +1,11 @@
-import 'package:canteen_app/common/color_extension.dart';
-import 'package:canteen_app/common_widget/round_textfield.dart';
+import 'dart:convert';
+import 'package:canteen_app/view/more/my_order_view.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import '../../common/color_extension.dart';
 import '../../common/globs.dart';
-import '../../common/service_call.dart';
-import '../../common_widget/category_cell.dart';
-import '../../common_widget/most_popular_cell.dart';
-import '../../common_widget/popular_resutaurant_row.dart';
-import '../../common_widget/recent_item_row.dart';
-import '../../common_widget/view_all_title_row.dart';
-import '../more/my_order_view.dart';
+import '../../common_widget/round_textfield.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -18,267 +15,483 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  TextEditingController txtSearch = TextEditingController();
+  List<Map<String, dynamic>> _categories = [];
+  List<Map<String, dynamic>> _filteredCategories = [];
+  Map<String, dynamic>? _selectedCategory;
+  List<Map<String, dynamic>> _menuItems = [];
+  bool _isLoading = true;
+  bool _hasError = false;
+  bool _isItemsLoading = false;
+  bool _hasItemsError = false;
+  final TextEditingController _searchController = TextEditingController();
 
-  List catArr = [
-    {"image": "assets/img/cat_offer.png", "name": "Offers"},
-    {"image": "assets/img/cat_sri.png", "name": "Sri Lankan"},
-    {"image": "assets/img/cat_3.png", "name": "Italian"},
-    {"image": "assets/img/cat_4.png", "name": "Indian"},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchCategories();
+    _searchController.addListener(_filterCategories);
+  }
 
-  List popArr = [
-    {
-      "image": "assets/img/res_1.png",
-      "name": "Minute by tuk tuk",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/res_2.png",
-      "name": "Café de Noir",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/res_3.png",
-      "name": "Bakes by Tella",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Western Food"
-    },
-  ];
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
-  List mostPopArr = [
-    {
-      "image": "assets/img/m_res_1.png",
-      "name": "Minute by tuk tuk",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/m_res_2.png",
-      "name": "Café de Noir",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Western Food"
-    },
-  ];
+  Future<void> _fetchCategories() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
 
-  List recentArr = [
-    {
-      "image": "assets/img/item_1.png",
-      "name": "Mulberry Pizza by Josh",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/item_2.png",
-      "name": "Barita",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Western Food"
-    },
-    {
-      "image": "assets/img/item_3.png",
-      "name": "Pizza Rush Hour",
-      "rate": "4.9",
-      "rating": "124",
-      "type": "Cafa",
-      "food_type": "Western Food"
-    },
-  ];
+    try {
+      final session = json.decode(Globs.udValueString(Globs.userPayload));
+      final response = await http
+          .post(
+            Uri.parse(SVKey.svUserCategoryList),
+            headers: {
+              'access_token': session['auth_token'] ?? '',
+              'Content-Type': 'application/json',
+            },
+            body: json.encode({}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == '1' && data['payload'] != null) {
+          setState(() {
+            _categories = List<Map<String, dynamic>>.from(data['payload']);
+            _filteredCategories = _categories;
+            _isLoading = false;
+            if (_categories.isNotEmpty) {
+              _selectedCategory = _categories[0];
+              _fetchItemsForCategory(_selectedCategory!);
+            }
+          });
+        } else {
+          throw Exception(data['message'] ?? 'Failed to fetch categories');
+        }
+      } else {
+        throw Exception('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _fetchItemsForCategory(Map<String, dynamic> category) async {
+    setState(() {
+      _isItemsLoading = true;
+      _hasItemsError = false;
+    });
+
+    try {
+      final session = json.decode(Globs.udValueString(Globs.userPayload));
+      final response = await http
+          .post(
+            Uri.parse(SVKey.svAdminMenuItemsList),
+            headers: {
+              'access_token': session['auth_token'] ?? '',
+              'Content-Type': 'application/json',
+            },
+            body: json.encode({
+              'category_id': category['category_id'].toString(),
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == '1' && data['payload'] != null) {
+          setState(() {
+            _menuItems = List<Map<String, dynamic>>.from(data['payload']);
+            _isItemsLoading = false;
+          });
+        } else {
+          throw Exception(data['message'] ?? 'Failed to fetch menu items');
+        }
+      } else {
+        throw Exception('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        _isItemsLoading = false;
+        _hasItemsError = true;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching items: $e')),
+        );
+      }
+    }
+  }
+
+  void _filterCategories() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredCategories = _categories.where((category) {
+        final name = category['name']?.toString().toLowerCase() ?? '';
+        return name.contains(query);
+      }).toList();
+
+      if (_selectedCategory != null) {
+        bool isSelectedInFiltered = _filteredCategories
+            .any((c) => c['category_id'] == _selectedCategory!['category_id']);
+        if (!isSelectedInFiltered) {
+          if (_filteredCategories.isNotEmpty) {
+            _selectedCategory = _filteredCategories[0];
+            _fetchItemsForCategory(_selectedCategory!);
+          } else {
+            _selectedCategory = null;
+            _menuItems = [];
+            _isItemsLoading = false;
+            _hasItemsError = false;
+          }
+        }
+      }
+    });
+  }
+
+  String _getImageUrl(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) return '';
+    final baseUrl =
+        SVKey.imageUrl.endsWith('/') ? SVKey.imageUrl : '${SVKey.imageUrl}/';
+    return '$baseUrl$imagePath';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            children: [
-              const SizedBox(
-                height: 46,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Good morning ${ServiceCall.userPayload[KKey.name] ?? ""}!",
-                      style: TextStyle(
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Menu",
+                        style: TextStyle(
                           color: TColor.primaryText,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const MyOrderView()));
-                      },
-                      icon: Image.asset(
-                        "assets/img/shopping_cart.png",
-                        width: 25,
-                        height: 25,
+                                builder: (context) => const MyOrderView()),
+                          );
+                        },
+                        icon: Image.asset(
+                          "assets/img/shopping_cart.png",
+                          width: 25,
+                          height: 25,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  RoundTextfield(
+                    hintText: "Search Categories",
+                    controller: _searchController,
+                    left: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset(
+                        "assets/img/search.png",
+                        width: 20,
+                        height: 20,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Delivering to",
-                      style:
-                          TextStyle(color: TColor.secondaryText, fontSize: 11),
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Current Location",
-                          style: TextStyle(
-                              color: TColor.secondaryText,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(
-                          width: 25,
-                        ),
-                        Image.asset(
-                          "assets/img/dropdown.png",
-                          width: 12,
-                          height: 12,
-                        )
-                      ],
-                    )
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: RoundTextfield(
-                  hintText: "Search Food",
-                  controller: txtSearch,
-                  left: Container(
-                    alignment: Alignment.center,
-                    width: 30,
-                    child: Image.asset(
-                      "assets/img/search.png",
-                      width: 20,
-                      height: 20,
-                    ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                ],
               ),
-              const SizedBox(
-                height: 30,
-              ),
-              SizedBox(
-                height: 120,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  itemCount: catArr.length,
-                  itemBuilder: ((context, index) {
-                    var cObj = catArr[index] as Map? ?? {};
-                    return CategoryCell(
-                      cObj: cObj,
-                      onTap: () {},
-                    );
-                  }),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ViewAllTitleRow(
-                  title: "Popular Restaurants",
-                  onView: () {},
-                ),
-              ),
-              ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                padding: EdgeInsets.zero,
-                itemCount: popArr.length,
-                itemBuilder: ((context, index) {
-                  var pObj = popArr[index] as Map? ?? {};
-                  return PopularRestaurantRow(
-                    pObj: pObj,
-                    onTap: () {},
-                  );
-                }),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ViewAllTitleRow(
-                  title: "Most Popular",
-                  onView: () {},
-                ),
-              ),
-              SizedBox(
-                height: 200,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  itemCount: mostPopArr.length,
-                  itemBuilder: ((context, index) {
-                    var mObj = mostPopArr[index] as Map? ?? {};
-                    return MostPopularCell(
-                      mObj: mObj,
-                      onTap: () {},
-                    );
-                  }),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ViewAllTitleRow(
-                  title: "Recent Items",
-                  onView: () {},
-                ),
-              ),
-              ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                itemCount: recentArr.length,
-                itemBuilder: ((context, index) {
-                  var rObj = recentArr[index] as Map? ?? {};
-                  return RecentItemRow(
-                    rObj: rObj,
-                    onTap: () {},
-                  );
-                }),
-              )
-            ],
+            ),
           ),
+          SliverToBoxAdapter(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _hasError
+                    ? _buildCategoriesErrorView()
+                    : _filteredCategories.isEmpty
+                        ? _buildCategoriesEmptyView()
+                        : _buildHorizontalCategoryGrid(),
+          ),
+          if (_selectedCategory != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                child: Text(
+                  "Items in ${_selectedCategory!['name']}",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          if (_selectedCategory != null)
+            if (_isItemsLoading)
+              SliverToBoxAdapter(
+                child: const Center(child: CircularProgressIndicator()),
+              )
+            else if (_hasItemsError)
+              SliverToBoxAdapter(
+                child: _buildItemsErrorView(),
+              )
+            else if (_menuItems.isEmpty)
+              SliverToBoxAdapter(
+                child: _buildItemsEmptyView(),
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final item = _menuItems[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 15, vertical: 8),
+                      child: ListTile(
+                        leading: _buildMenuItemImage(item),
+                        title: Text(item['name'] ?? 'Item'),
+                        subtitle: Text('Rs. ${item['base_price'] ?? '0'}'),
+                      ),
+                    );
+                  },
+                  childCount: _menuItems.length,
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHorizontalCategoryGrid() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final itemWidth = screenWidth < 400 ? 80.0 : 90.0;
+
+    return SizedBox(
+      height: 120,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        itemCount: _filteredCategories.length,
+        itemBuilder: (context, index) {
+          final category = _filteredCategories[index];
+          return _buildCategoryCircle(category);
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategoryCircle(Map<String, dynamic> category) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final imageSize = screenWidth < 400 ? 60.0 : 70.0;
+    final bool isSelected = _selectedCategory != null &&
+        category['category_id'] == _selectedCategory!['category_id'];
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedCategory = category;
+        });
+        _fetchItemsForCategory(category);
+      },
+      child: Container(
+        width: 90,
+        margin: const EdgeInsets.only(right: 15),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: imageSize,
+              height: imageSize,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? TColor.primary
+                      : TColor.primary.withOpacity(0.5),
+                  width: 2,
+                ),
+              ),
+              child: ClipOval(
+                child: category["image"]?.isNotEmpty == true
+                    ? Image.network(
+                        _getImageUrl(category["image"]),
+                        width: imageSize,
+                        height: imageSize,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            "assets/img/menu_placeholder.png",
+                            width: imageSize,
+                            height: imageSize,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        "assets/img/menu_placeholder.png",
+                        width: imageSize,
+                        height: imageSize,
+                        fit: BoxFit.cover,
+                      ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              category["name"] ?? "Category",
+              style: TextStyle(
+                color: TColor.primaryText,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItemImage(Map<String, dynamic> item) {
+    final imageUrl = _getImageUrl(item['image']);
+    if (imageUrl.isEmpty) {
+      return Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: TColor.textfield,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(Icons.fastfood, size: 30),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        imageUrl,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: TColor.textfield,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.error, size: 30),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoriesErrorView() {
+    return SizedBox(
+      height: 120,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error, size: 40, color: Colors.red),
+            const SizedBox(height: 8),
+            const Text("Failed to load categories"),
+            TextButton(
+              onPressed: _fetchCategories,
+              child: const Text("Retry"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoriesEmptyView() {
+    return SizedBox(
+      height: 120,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.category, size: 40, color: Colors.grey),
+            const SizedBox(height: 8),
+            Text(_searchController.text.isEmpty
+                ? "No categories"
+                : "No results"),
+            TextButton(
+              onPressed: _fetchCategories,
+              child: const Text("Refresh"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemsErrorView() {
+    return SizedBox(
+      height: 200,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error, size: 50, color: Colors.red),
+            const SizedBox(height: 10),
+            const Text("Failed to load menu items"),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => _fetchItemsForCategory(_selectedCategory!),
+              child: const Text("Retry"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemsEmptyView() {
+    return SizedBox(
+      height: 200,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.restaurant_menu, size: 50, color: Colors.grey),
+            const SizedBox(height: 10),
+            const Text("No menu items found"),
+          ],
         ),
       ),
     );
