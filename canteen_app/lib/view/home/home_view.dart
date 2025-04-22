@@ -1,11 +1,11 @@
 import 'dart:convert';
+import 'package:canteen_app/common/color_extension.dart';
+import 'package:canteen_app/common/globs.dart';
+import 'package:canteen_app/common_widget/round_textfield.dart';
+import 'package:canteen_app/view/more/cart.dart';
 import 'package:canteen_app/view/more/my_order_view.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
-import '../../common/color_extension.dart';
-import '../../common/globs.dart';
-import '../../common_widget/round_textfield.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -143,19 +143,17 @@ class _HomeViewState extends State<HomeView> {
         return name.contains(query);
       }).toList();
 
-      if (_selectedCategory != null) {
-        bool isSelectedInFiltered = _filteredCategories
-            .any((c) => c['category_id'] == _selectedCategory!['category_id']);
-        if (!isSelectedInFiltered) {
-          if (_filteredCategories.isNotEmpty) {
-            _selectedCategory = _filteredCategories[0];
-            _fetchItemsForCategory(_selectedCategory!);
-          } else {
-            _selectedCategory = null;
-            _menuItems = [];
-            _isItemsLoading = false;
-            _hasItemsError = false;
-          }
+      if (_selectedCategory != null &&
+          !_filteredCategories.any(
+              (c) => c['category_id'] == _selectedCategory!['category_id'])) {
+        if (_filteredCategories.isNotEmpty) {
+          _selectedCategory = _filteredCategories[0];
+          _fetchItemsForCategory(_selectedCategory!);
+        } else {
+          _selectedCategory = null;
+          _menuItems = [];
+          _isItemsLoading = false;
+          _hasItemsError = false;
         }
       }
     });
@@ -196,7 +194,8 @@ class _HomeViewState extends State<HomeView> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const MyOrderView()),
+                              builder: (context) => const MyOrderView(),
+                            ),
                           );
                         },
                         icon: Image.asset(
@@ -229,12 +228,17 @@ class _HomeViewState extends State<HomeView> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _hasError
-                    ? _buildCategoriesErrorView()
+                    ? _buildErrorView(
+                        "Failed to load categories", _fetchCategories)
                     : _filteredCategories.isEmpty
-                        ? _buildCategoriesEmptyView()
+                        ? _buildEmptyView(
+                            _searchController.text.isEmpty
+                                ? "No categories"
+                                : "No results",
+                            _fetchCategories)
                         : _buildHorizontalCategoryGrid(),
           ),
-          if (_selectedCategory != null)
+          if (_selectedCategory != null) ...[
             SliverToBoxAdapter(
               child: Padding(
                 padding:
@@ -246,19 +250,17 @@ class _HomeViewState extends State<HomeView> {
                 ),
               ),
             ),
-          if (_selectedCategory != null)
             if (_isItemsLoading)
-              SliverToBoxAdapter(
-                child: const Center(child: CircularProgressIndicator()),
+              const SliverToBoxAdapter(
+                child: Center(child: CircularProgressIndicator()),
               )
             else if (_hasItemsError)
               SliverToBoxAdapter(
-                child: _buildItemsErrorView(),
+                child: _buildErrorView("Failed to load menu items",
+                    () => _fetchItemsForCategory(_selectedCategory!)),
               )
             else if (_menuItems.isEmpty)
-              SliverToBoxAdapter(
-                child: _buildItemsEmptyView(),
-              )
+              SliverToBoxAdapter(child: _buildEmptyItemsView())
             else
               SliverList(
                 delegate: SliverChildBuilderDelegate(
@@ -271,12 +273,29 @@ class _HomeViewState extends State<HomeView> {
                         leading: _buildMenuItemImage(item),
                         title: Text(item['name'] ?? 'Item'),
                         subtitle: Text('Rs. ${item['base_price'] ?? '0'}'),
+                        trailing: IconButton(
+                          icon: Icon(Icons.add_shopping_cart,
+                              color: TColor.primary),
+                          onPressed: () {
+                            Cart.addItem(
+                              item['name'],
+                              double.parse(item['base_price'].toString()),
+                              image: _getImageUrl(item['image']),
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content:
+                                      Text('${item['name']} added to cart')),
+                            );
+                          },
+                        ),
                       ),
                     );
                   },
                   childCount: _menuItems.length,
                 ),
               ),
+          ],
         ],
       ),
     );
@@ -284,7 +303,7 @@ class _HomeViewState extends State<HomeView> {
 
   Widget _buildHorizontalCategoryGrid() {
     final screenWidth = MediaQuery.of(context).size.width;
-    final itemWidth = screenWidth < 400 ? 80.0 : 90.0;
+    final imageSize = screenWidth < 400 ? 60.0 : 70.0;
 
     return SizedBox(
       height: 120,
@@ -295,92 +314,79 @@ class _HomeViewState extends State<HomeView> {
         itemCount: _filteredCategories.length,
         itemBuilder: (context, index) {
           final category = _filteredCategories[index];
-          return _buildCategoryCircle(category);
-        },
-      ),
-    );
-  }
+          final isSelected = _selectedCategory != null &&
+              category['category_id'] == _selectedCategory!['category_id'];
 
-  Widget _buildCategoryCircle(Map<String, dynamic> category) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final imageSize = screenWidth < 400 ? 60.0 : 70.0;
-    final bool isSelected = _selectedCategory != null &&
-        category['category_id'] == _selectedCategory!['category_id'];
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedCategory = category;
-        });
-        _fetchItemsForCategory(category);
-      },
-      child: Container(
-        width: 90,
-        margin: const EdgeInsets.only(right: 15),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: imageSize,
-              height: imageSize,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected
-                      ? TColor.primary
-                      : TColor.primary.withOpacity(0.5),
-                  width: 2,
-                ),
-              ),
-              child: ClipOval(
-                child: category["image"]?.isNotEmpty == true
-                    ? Image.network(
-                        _getImageUrl(category["image"]),
-                        width: imageSize,
-                        height: imageSize,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            "assets/img/menu_placeholder.png",
-                            width: imageSize,
-                            height: imageSize,
-                            fit: BoxFit.cover,
-                          );
-                        },
-                      )
-                    : Image.asset(
-                        "assets/img/menu_placeholder.png",
-                        width: imageSize,
-                        height: imageSize,
-                        fit: BoxFit.cover,
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedCategory = category;
+              });
+              _fetchItemsForCategory(category);
+            },
+            child: Container(
+              width: 90,
+              margin: const EdgeInsets.only(right: 15),
+              child: Column(
+                children: [
+                  Container(
+                    width: imageSize,
+                    height: imageSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected
+                            ? TColor.primary
+                            : TColor.primary.withOpacity(0.5),
+                        width: 2,
                       ),
+                    ),
+                    child: ClipOval(
+                      child: category["image"]?.isNotEmpty == true
+                          ? Image.network(
+                              _getImageUrl(category["image"]),
+                              width: imageSize,
+                              height: imageSize,
+                              fit: BoxFit.cover,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              },
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset(
+                                "assets/img/menu_placeholder.png",
+                                width: imageSize,
+                                height: imageSize,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Image.asset(
+                              "assets/img/menu_placeholder.png",
+                              width: imageSize,
+                              height: imageSize,
+                              fit: BoxFit.cover,
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    category["name"] ?? "Category",
+                    style: TextStyle(
+                      color: TColor.primaryText,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              category["name"] ?? "Category",
-              style: TextStyle(
-                color: TColor.primaryText,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -418,7 +424,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildCategoriesErrorView() {
+  Widget _buildErrorView(String message, VoidCallback onRetry) {
     return SizedBox(
       height: 120,
       child: Center(
@@ -427,18 +433,15 @@ class _HomeViewState extends State<HomeView> {
           children: [
             const Icon(Icons.error, size: 40, color: Colors.red),
             const SizedBox(height: 8),
-            const Text("Failed to load categories"),
-            TextButton(
-              onPressed: _fetchCategories,
-              child: const Text("Retry"),
-            ),
+            Text(message),
+            TextButton(onPressed: onRetry, child: const Text("Retry")),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCategoriesEmptyView() {
+  Widget _buildEmptyView(String message, VoidCallback onRefresh) {
     return SizedBox(
       height: 120,
       child: Center(
@@ -447,50 +450,24 @@ class _HomeViewState extends State<HomeView> {
           children: [
             const Icon(Icons.category, size: 40, color: Colors.grey),
             const SizedBox(height: 8),
-            Text(_searchController.text.isEmpty
-                ? "No categories"
-                : "No results"),
-            TextButton(
-              onPressed: _fetchCategories,
-              child: const Text("Refresh"),
-            ),
+            Text(message),
+            TextButton(onPressed: onRefresh, child: const Text("Refresh")),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildItemsErrorView() {
-    return SizedBox(
+  Widget _buildEmptyItemsView() {
+    return const SizedBox(
       height: 200,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error, size: 50, color: Colors.red),
-            const SizedBox(height: 10),
-            const Text("Failed to load menu items"),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () => _fetchItemsForCategory(_selectedCategory!),
-              child: const Text("Retry"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildItemsEmptyView() {
-    return SizedBox(
-      height: 200,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.restaurant_menu, size: 50, color: Colors.grey),
-            const SizedBox(height: 10),
-            const Text("No menu items found"),
+            Icon(Icons.restaurant_menu, size: 50, color: Colors.grey),
+            SizedBox(height: 10),
+            Text("No menu items found"),
           ],
         ),
       ),
