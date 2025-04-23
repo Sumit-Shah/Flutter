@@ -1,13 +1,13 @@
 import 'package:canteen_app/common/color_extension.dart';
 import 'package:canteen_app/common/service_call.dart';
+import 'package:canteen_app/view/admin/admin_order_tracking_view.dart';
 import 'package:flutter/material.dart';
 import 'category_management_view.dart';
-import 'offer_management_view.dart';
 import 'about_management_view.dart';
 
 class AdminDashboardView extends StatelessWidget {
   const AdminDashboardView({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,9 +37,9 @@ class AdminDashboardView extends StatelessWidget {
           const SizedBox(height: 15),
           _buildSectionCard(
             context,
-            "Offer Management",
-            Icons.local_offer,
-            const OfferManagementView(),
+            "Order Management",
+            Icons.receipt_long,
+            const AdminOrderTrackingView(),
           ),
           const SizedBox(height: 15),
           _buildSectionCard(

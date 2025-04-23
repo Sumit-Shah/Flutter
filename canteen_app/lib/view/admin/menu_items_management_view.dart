@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -85,17 +86,7 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       final file = File(image.path);
-      final fileSize = await file.length();
-      final extension = image.path.split('.').last.toLowerCase();
-
-      if (fileSize > _maxImageSize) {
-        mdShowAlert(Globs.appName, "Image size exceeds 5MB limit.", () {});
-        return;
-      }
-      if (!['jpg', 'jpeg', 'png'].contains(extension)) {
-        mdShowAlert(Globs.appName, "Please select a JPG or PNG image.", () {});
-        return;
-      }
+      image.path.split('.').last.toLowerCase();
 
       setState(() {
         _selectedImage = file;
@@ -596,7 +587,7 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
     }
   }
 
-  void _showDeleteConfirmationDialog(int menuId) {
+  void _showDeleteConfirmationDialog(int menuItemId) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -609,7 +600,7 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
           ),
           TextButton(
             onPressed: () async {
-              await _deleteMenuItem(menuId);
+              await _deleteMenuItem(menuItemId);
               Navigator.pop(context);
             },
             child: const Text('Delete'),
@@ -619,39 +610,93 @@ class _MenuItemsManagementViewState extends State<MenuItemsManagementView> {
     );
   }
 
-  Future<void> _deleteMenuItem(int menuId) async {
+  Future<void> _deleteMenuItem(int menuItemId) async {
     try {
+      // Show loading indicator
       Globs.showHUD();
-      final session = json.decode(Globs.udValueString(Globs.userPayload));
-      final response = await http.post(
-        Uri.parse(SVKey.svAdminMenuItemsDelete),
-        headers: {
-          'access_token': session['auth_token'],
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({'menu_id': menuId}),
-      );
 
+      // Get session data
+      final session = json.decode(Globs.udValueString(Globs.userPayload));
+      final accessToken = session['auth_token'] as String?;
+
+      // Validate required data
+      if (accessToken == null || accessToken.isEmpty) {
+        throw Exception('Invalid authentication token');
+      }
+
+      if (widget.category['category_id'] == null) {
+        throw Exception('Category ID is missing');
+      }
+
+      // Prepare request
+      final requestBody = {
+        'menu_item_id': menuItemId.toString(),
+        'category_id': widget.category['category_id'].toString(),
+      };
+
+      debugPrint('Delete Request: ${json.encode(requestBody)}');
+
+      final response = await http
+          .post(
+            Uri.parse(SVKey.svAdminMenuItemsDelete),
+            headers: {
+              'access_token': accessToken,
+              'Content-Type': 'application/json',
+            },
+            body: json.encode(requestBody),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      debugPrint('Delete Response: ${response.statusCode}, ${response.body}');
+
+      final responseObj = json.decode(response.body);
       Globs.hideHUD();
+
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
-        final responseObj = json.decode(response.body);
         if (responseObj[KKey.status] == "1") {
-          if (mounted) {
-            fetchMenuItems();
-            mdShowAlert(Globs.appName, "Menu item deleted successfully", () {});
-          }
+          // Success - refresh the list
+          await fetchMenuItems();
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Menu item deleted successfully')));
         } else {
-          mdShowAlert(Globs.appName,
-              responseObj[KKey.message] ?? "Failed to delete menu item", () {});
+          // API returned status 0
+          final errorMsg =
+              responseObj[KKey.message] ?? "Failed to delete menu item";
+          _showErrorDialog(errorMsg);
         }
       } else {
-        mdShowAlert(Globs.appName,
-            "Failed to delete menu item. Please try again.", () {});
+        // HTTP error
+        _showErrorDialog("Server error: ${response.statusCode}");
       }
-    } catch (err) {
+    } on TimeoutException {
       Globs.hideHUD();
-      mdShowAlert(Globs.appName, "Error: ${err.toString()}", () {});
+      _showErrorDialog("Request timed out. Please try again.");
+    } on SocketException {
+      Globs.hideHUD();
+      _showErrorDialog("No internet connection.");
+    } catch (e) {
+      Globs.hideHUD();
+      _showErrorDialog("Error: ${e.toString()}");
     }
+  }
+
+  void _showErrorDialog(String message) {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 }

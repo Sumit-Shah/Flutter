@@ -78,7 +78,6 @@ class Globs {
 }
 
 class SVKey {
-  // static const mainUrl = "http://192.168.1.79:3001";
   static const mainUrl = "http://localhost:3001";
   static const imageUrl = "http://localhost:3001/img/";
   static const baseUrl = '$mainUrl/api/';
@@ -115,6 +114,12 @@ class SVKey {
   static const svUserMenuItemsList = '${baseUrl}user/menu_items_list';
   static const svUserMenuItemsByCategory =
       '${baseUrl}user/menu_items_by_category';
+
+  // Order endpoints
+  static const svUserPlaceOrder = '${baseUrl}user/place-order';
+  static const svAdminPlaceOrder = '${baseUrl}admin/place-order';
+  static const svAdminOrderList = '${baseUrl}admin/order_list';
+  static const svAdminUpdateOrderStatus = '${baseUrl}admin/update_order_status';
 }
 
 class KKey {

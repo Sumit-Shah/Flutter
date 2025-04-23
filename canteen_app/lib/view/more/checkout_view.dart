@@ -1,8 +1,10 @@
 import 'package:canteen_app/common/color_extension.dart';
+import 'package:canteen_app/common/globs.dart';
 import 'package:canteen_app/common_widget/round_button.dart';
 import 'package:canteen_app/view/more/cart.dart';
-import 'package:canteen_app/view/more/my_order_view.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CheckoutView extends StatelessWidget {
   final List orderedItems;
@@ -17,6 +19,62 @@ class CheckoutView extends StatelessWidget {
     required this.deliveryFloor,
     required this.deliveryNotes,
   });
+
+  Future<void> _placeOrder(BuildContext context) async {
+    Globs.showHUD(status: "Placing Order...");
+
+    // Retrieve auth_token from Globs
+    final userPayload = Globs.udValue(Globs.userPayload);
+    final token = userPayload[KKey.authToken] ?? '';
+
+    if (token.isEmpty) {
+      Globs.hideHUD();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to place an order')),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse(SVKey.svUserPlaceOrder),
+        headers: {
+          'Content-Type': 'application/json',
+          'access_token': token,
+        },
+        body: jsonEncode({
+          'items': orderedItems,
+          'total': total,
+          'delivery_floor': deliveryFloor,
+          'delivery_notes': deliveryNotes,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+      Globs.hideHUD();
+
+      if (response.statusCode == 200 && responseData[KKey.status] == '1') {
+        Cart.clear(); // Clear cart after successful order
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Order placed successfully! Order ID: ${responseData[KKey.payload]['order_id']}')),
+        );
+        Navigator.pop(context); // Return to previous screen
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text(responseData[KKey.message] ?? 'Failed to place order')),
+        );
+      }
+    } catch (error) {
+      Globs.hideHUD();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error placing order. Please try again.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -174,15 +232,7 @@ class CheckoutView extends StatelessWidget {
             const Spacer(),
             RoundButton(
               title: "Make Payment",
-              onPressed: () {
-                Cart.clear(); // Clear cart after payment
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Payment processing initiated!"),
-                  ),
-                );
-                Navigator.pop(context); // Return to previous screen
-              },
+              onPressed: () => _placeOrder(context),
             ),
             const SizedBox(height: 20),
           ],
