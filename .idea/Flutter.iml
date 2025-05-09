@@ -54,8 +54,16 @@
       <excludeFolder url="file://$MODULE_DIR$/canteen_app/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/example/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/canteen_app/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/example/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/canteen_app/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/canteen_app/esewa_flutter_sdk/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/canteen_app/esewa_flutter_sdk/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/canteen_app/esewa_flutter_sdk/build" />
+      <excludeFolder url="file://$MODULE_DIR$/canteen_app/external_sdk/esewa_sdk/esewa_flutter_sdk/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/canteen_app/external_sdk/esewa_sdk/esewa_flutter_sdk/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/canteen_app/external_sdk/esewa_sdk/esewa_flutter_sdk/build" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Dart SDK" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
   </component>
 </module>

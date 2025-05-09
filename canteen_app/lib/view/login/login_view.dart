@@ -8,7 +8,7 @@ import 'package:canteen_app/view/login/sign_up_view.dart' show SignUpView;
 import 'package:canteen_app/view/on_boarding/on_boarding_view.dart';
 import 'package:flutter/material.dart';
 import '../../common/service_call.dart';
-import '../../common_widget/round_icon_button.dart';
+// import '../../common_widget/round_icon_button.dart';
 import '../../common_widget/round_textfield.dart';
 
 class LoginView extends StatefulWidget {
@@ -97,34 +97,34 @@ class _LoginViewState extends State<LoginView> {
               const SizedBox(
                 height: 30,
               ),
-              Text(
-                "or Login With",
-                style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              RoundIconButton(
-                icon: "assets/img/facebook_logo.png",
-                title: "Login with Facebook",
-                color: const Color(0xff367FC0),
-                onPressed: () {},
-              ),
-              const SizedBox(
-                height: 25,
-              ),
-              RoundIconButton(
-                icon: "assets/img/google_logo.png",
-                title: "Login with Google",
-                color: const Color(0xffDD4B39),
-                onPressed: () {},
-              ),
-              const SizedBox(
-                height: 80,
-              ),
+              // Text(
+              //   "or Login With",
+              //   style: TextStyle(
+              //       color: TColor.secondaryText,
+              //       fontSize: 14,
+              //       fontWeight: FontWeight.w500),
+              // ),
+              // const SizedBox(
+              //   height: 30,
+              // ),
+              // RoundIconButton(
+              //   icon: "assets/img/facebook_logo.png",
+              //   title: "Login with Facebook",
+              //   color: const Color(0xff367FC0),
+              //   onPressed: () {},
+              // ),
+              // const SizedBox(
+              //   height: 25,
+              // ),
+              // RoundIconButton(
+              //   icon: "assets/img/google_logo.png",
+              //   title: "Login with Google",
+              //   color: const Color(0xffDD4B39),
+              //   onPressed: () {},
+              // ),
+              // const SizedBox(
+              //   height: 80,
+              // ),
               TextButton(
                 onPressed: () {
                   Navigator.push(

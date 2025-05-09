@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'package:canteen_app/main.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
+// import 'package:flutter_timezone/flutter_timezone.dart';
 
 class Globs {
   static const appName = "Canteen App";
@@ -68,18 +67,28 @@ class Globs {
     prefs?.remove(key);
   }
 
-  static Future<String> timeZone() async {
-    try {
-      return await FlutterTimezone.getLocalTimezone();
-    } on PlatformException {
-      return "";
-    }
-  }
+  // static Future<String> timeZone() async {
+  //   try {
+  //     return await FlutterTimezone.getLocalTimezone();
+  //   } on PlatformException {
+  //     return "";
+  //   }
+  // }
 }
 
 class SVKey {
-  static const mainUrl = "http://localhost:3001";
-  static const imageUrl = "http://localhost:3001/img/";
+  // Home IP
+  static const mainUrl = "http://192.168.1.79:3001";
+  static const imageUrl = "http://192.168.1.79:3001/img/";
+
+  //Collage IP
+  // static const mainUrl = "http://192.168.122.1:3001";
+  // static const imageUrl = "http://192.168.122.1:3001/img/";
+
+  //Lib IP
+  // static const mainUrl = "http://192.168.54.203:3001";
+  // static const imageUrl = "http://192.168.54.203:3001/img/";
+
   static const baseUrl = '$mainUrl/api/';
   static const nodeUrl = mainUrl;
 
