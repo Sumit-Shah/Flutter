@@ -129,6 +129,8 @@ class SVKey {
   static const svAdminPlaceOrder = '${baseUrl}admin/place-order';
   static const svAdminOrderList = '${baseUrl}admin/order_list';
   static const svAdminUpdateOrderStatus = '${baseUrl}admin/update_order_status';
+
+  static const svUserOrderHistory = '${baseUrl}user/order_history';
 }
 
 class KKey {

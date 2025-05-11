@@ -3,6 +3,7 @@ import 'package:canteen_app/common_widget/tab_button.dart';
 import 'package:canteen_app/view/home/home_view.dart';
 import 'package:canteen_app/view/menu/menu_view.dart';
 import 'package:canteen_app/view/more/more_view.dart';
+import 'package:canteen_app/view/offer/order_history.dart';
 // import 'package:canteen_app/view/offer/offer_view.dart';
 import 'package:canteen_app/view/profile/profile_view.dart';
 import 'package:flutter/material.dart';
@@ -72,19 +73,19 @@ class _MainTabViewState extends State<MainTabView> {
                     }
                   },
                   isSelected: selctTab == 0),
-              // TabButton(
-              //     title: "Offer",
-              //     icon: "assets/img/tab_offer.png",
-              //     onTap: () {
-              //       if (selctTab != 1) {
-              //         selctTab = 1;
-              //         selectPageView = const OfferView();
-              //       }
-              //       if (mounted) {
-              //         setState(() {});
-              //       }
-              //     },
-              //     isSelected: selctTab == 1),
+              TabButton(
+                  title: "History",
+                  icon: "assets/img/tab_offer.png",
+                  onTap: () {
+                    if (selctTab != 1) {
+                      selctTab = 1;
+                      selectPageView = const OrderHistoryView();
+                    }
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  },
+                  isSelected: selctTab == 1),
               const SizedBox(
                 width: 40,
                 height: 40,
