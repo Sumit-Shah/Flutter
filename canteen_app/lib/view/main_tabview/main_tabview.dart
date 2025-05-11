@@ -3,7 +3,7 @@ import 'package:canteen_app/common_widget/tab_button.dart';
 import 'package:canteen_app/view/home/home_view.dart';
 import 'package:canteen_app/view/menu/menu_view.dart';
 import 'package:canteen_app/view/more/more_view.dart';
-import 'package:canteen_app/view/offer/order_history.dart';
+import 'package:canteen_app/view/history/order_history.dart';
 // import 'package:canteen_app/view/offer/offer_view.dart';
 import 'package:canteen_app/view/profile/profile_view.dart';
 import 'package:flutter/material.dart';

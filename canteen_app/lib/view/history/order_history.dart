@@ -108,9 +108,17 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
     }).toList();
   }
 
+  double _calculateTotalAmount(List<Map<String, dynamic>> filteredOrders) {
+    return filteredOrders.fold(0.0, (sum, order) {
+      final total = double.tryParse(order['total'].toString()) ?? 0.0;
+      return sum + total;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredOrders = _filterOrdersByTab(selectedTab);
+    final totalAmount = _calculateTotalAmount(filteredOrders);
 
     return Scaffold(
       backgroundColor: TColor.white,
@@ -147,7 +155,16 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
                 _buildTabButton("Month", 2),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+            Text(
+              "Total Spent: Rs. ${totalAmount.toStringAsFixed(2)}",
+              style: TextStyle(
+                color: TColor.primaryText,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
             Expanded(
               child: filteredOrders.isEmpty
                   ? Center(
