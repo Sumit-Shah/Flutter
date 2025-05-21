@@ -160,7 +160,7 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
               "Total Spent: Rs. ${totalAmount.toStringAsFixed(2)}",
               style: TextStyle(
                 color: TColor.primaryText,
-                fontSize: 18,
+                fontSize: 25,
                 fontWeight: FontWeight.bold,
               ),
             ),

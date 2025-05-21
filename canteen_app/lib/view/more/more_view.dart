@@ -16,30 +16,30 @@ class MoreView extends StatefulWidget {
 
 class _MoreViewState extends State<MoreView> {
   List moreArr = [
-    {
-      "index": "1",
-      "name": "Payment Details",
-      "image": "assets/img/more_payment.png",
-      "base": 0
-    },
+    // {
+    //   "index": "1",
+    //   "name": "Payment Details",
+    //   "image": "assets/img/more_payment.png",
+    //   "base": 0
+    // },
     {
       "index": "2",
       "name": "My Orders",
       "image": "assets/img/more_my_order.png",
       "base": 0
     },
-    {
-      "index": "3",
-      "name": "Notifications",
-      "image": "assets/img/more_notification.png",
-      "base": 15
-    },
-    {
-      "index": "4",
-      "name": "Inbox",
-      "image": "assets/img/more_inbox.png",
-      "base": 0
-    },
+    // {
+    //   "index": "3",
+    //   "name": "Notifications",
+    //   "image": "assets/img/more_notification.png",
+    //   "base": 15
+    // },
+    // {
+    //   "index": "4",
+    //   "name": "Inbox",
+    //   "image": "assets/img/more_inbox.png",
+    //   "base": 0
+    // },
     {
       "index": "5",
       "name": "About Us",

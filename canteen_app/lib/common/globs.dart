@@ -82,12 +82,15 @@ class SVKey {
   static const imageUrl = "http://192.168.1.79:3001/img/";
 
   //Collage IP
+  // static const mainUrl = "http://192.168.123.83:3001";
+  // static const imageUrl = "http://192.168.123.83:3001/img/";
+
+  //Lib IP
   // static const mainUrl = "http://192.168.122.1:3001";
   // static const imageUrl = "http://192.168.122.1:3001/img/";
 
-  //Lib IP
-  // static const mainUrl = "http://192.168.54.203:3001";
-  // static const imageUrl = "http://192.168.54.203:3001/img/";
+  // static const mainUrl = "http://192.168.214.83:3001";
+  // static const imageUrl = "http://192.168.214.83:3001/img/";
 
   static const baseUrl = '$mainUrl/api/';
   static const nodeUrl = mainUrl;
@@ -131,6 +134,8 @@ class SVKey {
   static const svAdminUpdateOrderStatus = '${baseUrl}admin/update_order_status';
 
   static const svUserOrderHistory = '${baseUrl}user/order_history';
+
+  static const String svAdminSalesReport = "${baseUrl}admin/sales_report";
 }
 
 class KKey {

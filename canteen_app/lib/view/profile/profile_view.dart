@@ -109,32 +109,20 @@ class _ProfileViewState extends State<ProfileView> {
         throw Exception('Authentication token not found');
       }
 
-      var request = http.MultipartRequest(
-        'POST',
+      var response = await http.post(
         Uri.parse('${SVKey.baseUrl}user/update_profile'),
+        body: {
+          'name': txtName.text,
+          'email': txtEmail.text,
+          'mobile': txtMobile.text,
+          'address': txtAddress.text,
+          'password': txtPassword.text,
+        },
+        headers: {'access_token': token},
       );
 
-      request.headers['access_token'] = token;
-
-      request.fields['name'] = txtName.text;
-      request.fields['email'] = txtEmail.text;
-      request.fields['mobile'] = txtMobile.text;
-      request.fields['address'] = txtAddress.text;
-
-      if (txtPassword.text.isNotEmpty) {
-        request.fields['password'] = txtPassword.text;
-      }
-
-      if (image != null) {
-        request.files.add(
-            await http.MultipartFile.fromPath('profile_image', image!.path));
-      }
-
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
-
       if (response.statusCode == 200) {
-        final data = json.decode(responseBody);
+        final data = json.decode(response.body);
         if (data['status'] == '1') {
           // Update local user data
           final updatedUserData = {
